@@ -1,0 +1,43 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Tooling caches and test output
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment and local settings
+.env
+.env.*
+
+# Local databases
+*.db
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project-generated artifacts
+captured_images/
+aligned_img/
+train_img/
+npy/
+model/*.pb

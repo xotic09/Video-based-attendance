@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition Attendance System</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; margin-top: 50px; }
+        video { border: 2px solid #ccc; border-radius: 10px; }
+        form { margin-top: 20px; }
+        input, button { padding: 10px; margin: 5px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>Face Recognition Attendance System</h1>
+    <div>
+        <img src="{{ url_for('video_feed') }}" alt="Video Feed" width="640" height="480">
+    </div>
+    <form action="{{ url_for('capture') }}" method="post">
+        <input type="text" name="subject" placeholder="Subject" required>
+        <input type="text" name="teacher" placeholder="Teacher" required>
+        <button type="submit">Capture and Process</button>
+    </form>
+</body>
+</html>
+

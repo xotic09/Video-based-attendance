@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Results</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; margin-top: 50px; }
+        h2 { color: #333; }
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 5px; font-size: 18px; }
+        .present { color: green; }
+        .absent { color: red; }
+        a { display: inline-block; margin-top: 20px; text-decoration: none; padding: 10px 20px; background-color: #007BFF; color: #fff; border-radius: 5px; }
+        a:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Attendance Results</h1>
+
+    <h2>Present Students</h2>
+    {% if detected_names %}
+        <ul>
+            {% for name in detected_names %}
+                <li class="present">{{ name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No students were detected as present.</p>
+    {% endif %}
+
+    <h2>Absent Students</h2>
+    {% if absentees %}
+        <ul>
+            {% for name in absentees %}
+                <li class="absent">{{ name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>All students are present.</p>
+    {% endif %}
+
+    <a href="{{ url_for('index') }}">Back to Home</a>
+</body>
+</html>

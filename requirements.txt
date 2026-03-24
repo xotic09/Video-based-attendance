@@ -1,0 +1,9 @@
+Flask
+opencv-python
+numpy
+tensorflow==1.15.0
+scikit-learn
+Pillow
+facenet
+mtcnn
+
