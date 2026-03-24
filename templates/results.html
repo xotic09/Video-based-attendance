@@ -5,41 +5,145 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance Results</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; margin-top: 50px; }
-        h2 { color: #333; }
-        ul { list-style-type: none; padding: 0; }
-        li { padding: 5px; font-size: 18px; }
-        .present { color: green; }
-        .absent { color: red; }
-        a { display: inline-block; margin-top: 20px; text-decoration: none; padding: 10px 20px; background-color: #007BFF; color: #fff; border-radius: 5px; }
-        a:hover { background-color: #0056b3; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            background: linear-gradient(160deg, #f2ece3, #fbf8f3);
+            color: #2b241c;
+            padding: 24px;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1, h2 {
+            margin-top: 0;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .card, section {
+            background: #fffaf2;
+            border: 1px solid #ddd1be;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 12px 30px rgba(60, 44, 20, 0.08);
+        }
+
+        .columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee3d3;
+        }
+
+        li:last-child {
+            border-bottom: 0;
+        }
+
+        .present {
+            color: #1f6f5f;
+        }
+
+        .absent {
+            color: #9b2c2c;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 22px;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 999px;
+            background: #1f6f5f;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
-    <h1>Attendance Results</h1>
+    <main>
+        <h1>Attendance Results</h1>
 
-    <h2>Present Students</h2>
-    {% if detected_names %}
-        <ul>
-            {% for name in detected_names %}
-                <li class="present">{{ name }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No students were detected as present.</p>
-    {% endif %}
+        <div class="summary">
+            <div class="card">
+                <h2>Present</h2>
+                <p>{{ detected_names|length }}</p>
+            </div>
+            <div class="card">
+                <h2>Absent</h2>
+                <p>{{ absentees|length }}</p>
+            </div>
+            <div class="card">
+                <h2>Sampled Frames</h2>
+                <p>{{ processed_frames }}</p>
+            </div>
+            <div class="card">
+                <h2>Total Frames</h2>
+                <p>{{ total_frames }}</p>
+            </div>
+        </div>
 
-    <h2>Absent Students</h2>
-    {% if absentees %}
-        <ul>
-            {% for name in absentees %}
-                <li class="absent">{{ name }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>All students are present.</p>
-    {% endif %}
+        <div class="columns">
+            <section>
+                <h2>Present Students</h2>
+                {% if detected_names %}
+                    <ul>
+                        {% for name in detected_names %}
+                            <li class="present">{{ name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No student met the minimum detection threshold.</p>
+                {% endif %}
+            </section>
 
-    <a href="{{ url_for('index') }}">Back to Home</a>
+            <section>
+                <h2>Absent Students</h2>
+                {% if absentees %}
+                    <ul>
+                        {% for name in absentees %}
+                            <li class="absent">{{ name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>All registered students were marked present.</p>
+                {% endif %}
+            </section>
+        </div>
+
+        <section style="margin-top: 18px;">
+            <h2>Detection Counts</h2>
+            <p>A student is marked present only after at least {{ min_present_detections }} detections across sampled frames.</p>
+            {% if detection_counts %}
+                <ul>
+                    {% for name, count in detection_counts.items() %}
+                        <li>{{ name }}: {{ count }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No confident detections were produced from the uploaded recording.</p>
+            {% endif %}
+        </section>
+
+        <a href="{{ url_for('index') }}">Record Another Video</a>
+    </main>
 </body>
 </html>

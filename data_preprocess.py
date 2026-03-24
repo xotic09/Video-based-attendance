@@ -4,10 +4,11 @@ input_datadir = './train_img'
 output_datadir = './aligned_img'
 
 obj=preprocesses(input_datadir,output_datadir)
-nrof_images_total,nrof_successfully_aligned=obj.collect_data()
+stats = obj.collect_data()
 
-print('Total number of images: %d' % nrof_images_total)
-print('Number of successfully aligned images: %d' % nrof_successfully_aligned)
-
+print('Total number of images: %d' % stats['total_images'])
+print('Number of newly aligned images: %d' % stats['newly_aligned'])
+print('Number of skipped existing aligned images: %d' % stats['skipped_existing'])
+print('Number of failed alignments: %d' % stats['failed'])
 
 

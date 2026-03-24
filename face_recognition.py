@@ -129,7 +129,7 @@ class FaceRecognition:
 
             for name in detected_names:
                 student_id = self.get_student_id(name)
-                if student_id:
+                if student_id and not self._attendance_exists(c, student_id, current_date, subject, teacher):
                 # Insert attendance record with the current date
                     c.execute('''
                     INSERT INTO attendance (student_id, date, subject, teacher, status)
@@ -150,7 +150,7 @@ class FaceRecognition:
         
             for absentee in absentees:
                 student_id = self.get_student_id(absentee)
-                if student_id:
+                if student_id and not self._attendance_exists(c, student_id, current_date, subject, teacher):
                     c.execute('''
                     INSERT INTO attendance (student_id, date, subject, teacher, status)
                     VALUES (?, ?, ?, ?, ?)
@@ -177,6 +177,18 @@ class FaceRecognition:
         if result:
             return result[0]
         return None
+
+    def _attendance_exists(self, cursor, student_id, current_date, subject, teacher):
+        cursor.execute(
+            '''
+            SELECT 1
+            FROM attendance
+            WHERE student_id = ? AND date = ? AND subject = ? AND teacher = ?
+            LIMIT 1
+            ''',
+            (student_id, current_date, subject, teacher)
+        )
+        return cursor.fetchone() is not None
 
 
 

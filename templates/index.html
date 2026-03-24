@@ -3,24 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Recognition Attendance System</title>
+    <title>Recorded Video Attendance</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; margin-top: 50px; }
-        video { border: 2px solid #ccc; border-radius: 10px; }
-        form { margin-top: 20px; }
-        input, button { padding: 10px; margin: 5px; font-size: 16px; }
+        :root {
+            --bg: #f4f1ea;
+            --panel: #fffaf2;
+            --border: #d8cdbd;
+            --text: #2b241c;
+            --accent: #1f6f5f;
+            --accent-dark: #174f44;
+            --danger: #9b2c2c;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(31, 111, 95, 0.12), transparent 30%),
+                linear-gradient(135deg, #efe7da, #f9f6ef 55%, #e8ddd0);
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .shell {
+            width: min(900px, 100%);
+            background: rgba(255, 250, 242, 0.95);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 24px 60px rgba(60, 44, 20, 0.14);
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: clamp(2rem, 4vw, 3rem);
+        }
+
+        p {
+            margin: 0 0 16px;
+            line-height: 1.5;
+        }
+
+        .meta {
+            color: #5b5146;
+            font-size: 0.95rem;
+        }
+
+        .video-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            margin: 24px 0;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px;
+        }
+
+        video {
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 12px;
+            aspect-ratio: 4 / 3;
+        }
+
+        form {
+            display: grid;
+            gap: 14px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            font: inherit;
+            background: #fff;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        button {
+            border: 0;
+            border-radius: 999px;
+            padding: 12px 18px;
+            font: inherit;
+            cursor: pointer;
+            color: #fff;
+            background: var(--accent);
+        }
+
+        button:hover {
+            background: var(--accent-dark);
+        }
+
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .secondary {
+            background: #7a6d5c;
+        }
+
+        .danger {
+            background: var(--danger);
+        }
+
+        .status {
+            min-height: 24px;
+            font-weight: 600;
+        }
+
+        .tips {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        @media (max-width: 640px) {
+            .shell {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Face Recognition Attendance System</h1>
-    <div>
-        <img src="{{ url_for('video_feed') }}" alt="Video Feed" width="640" height="480">
-    </div>
-    <form action="{{ url_for('capture') }}" method="post">
-        <input type="text" name="subject" placeholder="Subject" required>
-        <input type="text" name="teacher" placeholder="Teacher" required>
-        <button type="submit">Capture and Process</button>
-    </form>
+    <main class="shell">
+        <h1>Recorded Attendance Capture</h1>
+        <p>Record a short classroom video, then upload it for attendance processing. The backend samples frames every {{ frame_interval }} frames and marks a student present after at least {{ min_present_detections }} confident detections.</p>
+        <p class="meta">Recommended recording: 10 seconds, slow camera movement, clear front-facing student visibility.</p>
+
+        <div class="video-grid">
+            <section class="panel">
+                <h2>Live Camera</h2>
+                <video id="livePreview" autoplay muted playsinline></video>
+            </section>
+            <section class="panel">
+                <h2>Recorded Preview</h2>
+                <video id="recordedPreview" controls playsinline></video>
+            </section>
+        </div>
+
+        <form id="recordingForm" action="{{ url_for('upload_recording') }}" method="post" enctype="multipart/form-data">
+            <label>
+                Subject
+                <input type="text" name="subject" id="subject" required>
+            </label>
+            <label>
+                Teacher
+                <input type="text" name="teacher" id="teacher" required>
+            </label>
+
+            <div class="controls">
+                <button type="button" id="startBtn">Start Recording</button>
+                <button type="button" class="danger" id="stopBtn" disabled>Stop Recording</button>
+                <button type="submit" class="secondary" id="uploadBtn" disabled>Upload For Attendance</button>
+            </div>
+
+            <input type="file" name="video" id="videoInput" hidden>
+            <p class="status" id="statusText">Camera is initializing...</p>
+        </form>
+
+        <section class="panel">
+            <h2>Recording Tips</h2>
+            <ul class="tips">
+                <li>Keep the camera steady and pan slowly across the room.</li>
+                <li>Make sure each student is visible for more than one moment.</li>
+                <li>Avoid strong backlight and heavy motion blur.</li>
+            </ul>
+        </section>
+    </main>
+
+    <script>
+        const livePreview = document.getElementById("livePreview");
+        const recordedPreview = document.getElementById("recordedPreview");
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const uploadBtn = document.getElementById("uploadBtn");
+        const videoInput = document.getElementById("videoInput");
+        const statusText = document.getElementById("statusText");
+        const recordingForm = document.getElementById("recordingForm");
+
+        let stream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+
+        async function initCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                livePreview.srcObject = stream;
+                statusText.textContent = "Camera ready. Record a short classroom video.";
+            } catch (error) {
+                statusText.textContent = "Camera access failed. Check browser permissions and reload.";
+                startBtn.disabled = true;
+                console.error(error);
+            }
+        }
+
+        function buildRecordedFile() {
+            if (!recordedChunks.length) {
+                return null;
+            }
+
+            const blob = new Blob(recordedChunks, { type: "video/webm" });
+            const file = new File([blob], "attendance_recording.webm", { type: blob.type });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            videoInput.files = dataTransfer.files;
+            recordedPreview.src = URL.createObjectURL(blob);
+            return file;
+        }
+
+        startBtn.addEventListener("click", () => {
+            if (!stream) {
+                statusText.textContent = "Camera is not available.";
+                return;
+            }
+
+            recordedChunks = [];
+            const recorderOptions = MediaRecorder.isTypeSupported("video/webm")
+                ? { mimeType: "video/webm" }
+                : undefined;
+            mediaRecorder = new MediaRecorder(stream, recorderOptions);
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data && event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const file = buildRecordedFile();
+                uploadBtn.disabled = !file;
+                statusText.textContent = file
+                    ? "Recording ready. Submit to generate attendance."
+                    : "No recording captured. Try again.";
+            };
+
+            mediaRecorder.start();
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            uploadBtn.disabled = true;
+            statusText.textContent = "Recording in progress...";
+        });
+
+        stopBtn.addEventListener("click", () => {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        });
+
+        recordingForm.addEventListener("submit", (event) => {
+            if (!videoInput.files.length) {
+                event.preventDefault();
+                statusText.textContent = "Record a video before uploading.";
+                return;
+            }
+
+            uploadBtn.disabled = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = true;
+            statusText.textContent = "Uploading video and processing attendance...";
+        });
+
+        initCamera();
+    </script>
 </body>
 </html>
-

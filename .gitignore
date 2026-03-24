@@ -37,6 +37,7 @@ Thumbs.db
 
 # Project-generated artifacts
 captured_images/
+extracted_images/
 aligned_img/
 train_img/
 npy/
