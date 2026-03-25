@@ -1,0 +1,6 @@
+./aligned_img\charan504\20260324_152526.jpg.png 1006 681 1887 1620
+./aligned_img\charan504\20260324_152527.jpg.png 1238 564 1946 1423
+./aligned_img\charan504\20260324_152528.jpg.png
+./aligned_img\charan504\20260324_152530.jpg.png 1182 1412 2040 2234
+./aligned_img\charan504\20260324_152532.jpg.png 1258 909 1799 1625
+./aligned_img\charan504\20260324_152533.jpg.png

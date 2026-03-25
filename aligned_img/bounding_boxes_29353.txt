@@ -1,0 +1,10 @@
+./aligned_img\Mansoor\20260324_153505.jpg.png
+./aligned_img\Mansoor\20260324_153506.jpg.png
+./aligned_img\Mansoor\20260324_153515.jpg.png
+./aligned_img\Mansoor\20260324_154118.png
+./aligned_img\Mansoor\20260324_154120.png 1210 1253 2047 2116
+./aligned_img\Mansoor\20260324_154124.png
+./aligned_img\Mansoor\20260324_154129.png
+./aligned_img\Mansoor\20260324_154131.png 1154 992 2121 2058
+./aligned_img\charan504\20260324_152528.jpg.png
+./aligned_img\charan504\20260324_152533.jpg.png

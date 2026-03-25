@@ -1,0 +1,5 @@
+./aligned_img\Mansoor\20260324_153505.jpg.png
+./aligned_img\Mansoor\20260324_153506.jpg.png
+./aligned_img\Mansoor\20260324_153515.jpg.png
+./aligned_img\charan504\20260324_152528.jpg.png
+./aligned_img\charan504\20260324_152533.jpg.png

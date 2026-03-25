@@ -1,0 +1,8 @@
+./aligned_img\Mansoor\20260324_153503.jpg.png 945 891 2231 2094
+./aligned_img\Mansoor\20260324_153505.jpg.png
+./aligned_img\Mansoor\20260324_153506.jpg.png
+./aligned_img\Mansoor\20260324_153508.jpg.png 1384 1483 2524 2849
+./aligned_img\Mansoor\20260324_153511.jpg.png 1674 1085 2345 1987
+./aligned_img\Mansoor\20260324_153515.jpg.png
+./aligned_img\charan504\20260324_152528.jpg.png
+./aligned_img\charan504\20260324_152533.jpg.png
