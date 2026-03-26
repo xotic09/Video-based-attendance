@@ -52,8 +52,8 @@ def parse_args():
     parser.add_argument(
         "--interval",
         type=int,
-        default=5,
-        help="Save every Nth frame. Default: 5",
+        default=3,
+        help="Save every Nth frame. Default: 3",
     )
     return parser.parse_args()
 

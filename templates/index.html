@@ -70,6 +70,36 @@
             padding: 18px;
         }
 
+        .video-frame {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .video-frame.is-blocked video {
+            filter: blur(8px) brightness(0.3);
+        }
+
+        .video-overlay {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            padding: 16px;
+            background: rgba(17, 17, 17, 0.58);
+            color: #f7f0e5;
+            font-size: 1rem;
+            font-weight: 700;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 160ms ease;
+        }
+
+        .video-frame.is-blocked .video-overlay {
+            opacity: 1;
+        }
+
         video {
             width: 100%;
             background: #1a1a1a;
@@ -157,7 +187,10 @@
         <div class="video-grid">
             <section class="panel">
                 <h2>Live Camera</h2>
-                <video id="livePreview" autoplay muted playsinline></video>
+                <div class="video-frame" id="livePreviewFrame">
+                    <video id="livePreview" autoplay muted playsinline></video>
+                    <div class="video-overlay" id="livePreviewOverlay">Live preview blocked after recording</div>
+                </div>
             </section>
             <section class="panel">
                 <h2>Recorded Preview</h2>
@@ -196,6 +229,7 @@
     </main>
 
     <script>
+        const livePreviewFrame = document.getElementById("livePreviewFrame");
         const livePreview = document.getElementById("livePreview");
         const recordedPreview = document.getElementById("recordedPreview");
         const startBtn = document.getElementById("startBtn");
@@ -209,10 +243,19 @@
         let mediaRecorder = null;
         let recordedChunks = [];
 
+        function setLivePreviewBlocked(isBlocked) {
+            livePreviewFrame.classList.toggle("is-blocked", isBlocked);
+
+            if (!isBlocked && stream && livePreview.srcObject !== stream) {
+                livePreview.srcObject = stream;
+            }
+        }
+
         async function initCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
                 livePreview.srcObject = stream;
+                setLivePreviewBlocked(false);
                 statusText.textContent = "Camera ready. Record a short classroom video.";
             } catch (error) {
                 statusText.textContent = "Camera access failed. Check browser permissions and reload.";
@@ -241,6 +284,7 @@
                 return;
             }
 
+            setLivePreviewBlocked(false);
             recordedChunks = [];
             const recorderOptions = MediaRecorder.isTypeSupported("video/webm")
                 ? { mimeType: "video/webm" }
@@ -272,6 +316,7 @@
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.stop();
             }
+            setLivePreviewBlocked(true);
             startBtn.disabled = false;
             stopBtn.disabled = true;
         });

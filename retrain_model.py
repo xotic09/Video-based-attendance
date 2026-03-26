@@ -1,6 +1,7 @@
 import argparse
 import os
 import shutil
+import time
 
 from classifier import training
 from preprocess import preprocesses
@@ -19,9 +20,20 @@ def remove_aligned_outputs(output_dir):
     for entry in os.listdir(output_dir):
         entry_path = os.path.join(output_dir, entry)
         if os.path.isdir(entry_path):
-            shutil.rmtree(entry_path)
+            try:
+                shutil.rmtree(entry_path)
+            except PermissionError:
+                print("Warning: could not remove %s (locked), skipping" % entry_path)
         elif entry.startswith("bounding_boxes_") and entry.endswith(".txt"):
-            os.remove(entry_path)
+            for attempt in range(3):
+                try:
+                    os.remove(entry_path)
+                    break
+                except PermissionError:
+                    if attempt < 2:
+                        time.sleep(1)
+                    else:
+                        print("Warning: could not delete %s (file locked), skipping" % entry_path)
 
 
 def main():

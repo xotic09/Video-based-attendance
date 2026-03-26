@@ -18,7 +18,10 @@ class training:
 
     def main_train(self):
         with tf.Graph().as_default():
-            with tf.Session() as sess:
+            gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.6)
+            config = tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False)
+            config.gpu_options.allow_growth = True
+            with tf.Session(config=config) as sess:
                 img_data = facenet.get_dataset(self.datadir)
                 path, label = facenet.get_image_paths_and_labels(img_data)
                 print('Classes: %d' % len(img_data))

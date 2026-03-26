@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(C:/Users/manso/Desktop/Video-based-attendance/venv/Scripts/python.exe -c \"import sys; print\\(sys.version\\)\")",
+      "Bash(C:/Users/manso/Desktop/Video-based-attendance/venv/Scripts/pip.exe list:*)",
+      "Bash(venv/Scripts/python.exe retrain_model.py --clean)",
+      "Bash(tasklist)",
+      "Bash(pip --version)",
+      "Bash(pip list:*)",
+      "Bash(gdown \"https://drive.google.com/uc?id=1EXPBSXwTaqQSg06nTMmQUQjdjhzhMfGy\" -O 20180402-114759.zip)",
+      "Bash(gdown:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:drive.google.com)",
+      "Bash(curl:*)",
+      "Bash(powershell -Command \"Get-CimInstance Win32_VideoController | Select-Object Name\" 2>&1)",
+      "Bash(py -3.10 --version)",
+      "Bash(py --list)",
+      "Bash(nvcc --version)",
+      "Bash(where cudnn64_8.dll)",
+      "Bash(nvidia-smi)",
+      "Bash(conda --version)",
+      "Bash(python -m pip install \"numpy<2\")",
+      "Bash(python -m pip install \"opencv-python<4.11\")",
+      "Bash(python -m pip install \"nvidia-cudnn-cu11<9\" nvidia-cufft-cu11 nvidia-curand-cu11 nvidia-cusolver-cu11 nvidia-cusparse-cu11)",
+      "Bash(for dir:*)",
+      "Bash(do mkdir:*)",
+      "Bash(touch \"$dir/.gitkeep\")",
+      "Bash(done)"
+    ]
+  }
+}

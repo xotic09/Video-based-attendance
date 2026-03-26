@@ -35,10 +35,14 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# Project-generated artifacts
-# captured_images/
-# extracted_images/
-# aligned_img/
-# train_img/
-# npy/
-model/*.pb
+# Project-generated artifacts (ignore contents, keep folders)
+captured_images/*
+!captured_images/.gitkeep
+extracted_images/*
+!extracted_images/.gitkeep
+aligned_img/*
+!aligned_img/.gitkeep
+train_img/*
+!train_img/.gitkeep
+npy/*
+!npy/.gitkeep

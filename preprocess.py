@@ -73,7 +73,19 @@ class preprocesses:
                         print('to_rgb data dimension: ', img.ndim)
                     img = img[:, :, 0:3]
 
-                    bounding_boxes, _ = detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
+                    # Downscale large images for faster MTCNN detection
+                    max_dim = 500
+                    h, w = img.shape[:2]
+                    if max(h, w) > max_dim:
+                        scale = max_dim / max(h, w)
+                        small_img = np.array(Image.fromarray(img).resize((int(w * scale), int(h * scale))))
+                    else:
+                        scale = 1.0
+                        small_img = img
+
+                    bounding_boxes, _ = detect_face.detect_face(small_img, minsize, pnet, rnet, onet, threshold, factor)
+                    if scale != 1.0:
+                        bounding_boxes[:, 0:4] = bounding_boxes[:, 0:4] / scale
                     nrof_faces = bounding_boxes.shape[0]
                     print('No of Detected Face: %d' % nrof_faces)
                     if nrof_faces > 0:
