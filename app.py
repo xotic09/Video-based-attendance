@@ -9,12 +9,19 @@ import zipfile
 from xml.sax.saxutils import escape
 
 import cv2
-from flask import Flask, render_template, request, send_file
+from flask import Flask, jsonify, render_template, request, send_file
+from pymongo import MongoClient
 from werkzeug.utils import secure_filename
 
 from face_recognition import FaceRecognition
 
 app = Flask(__name__)
+
+# MongoDB setup
+MONGO_URI = "mongodb+srv://charan:charan123@cluster0.tilwtgy.mongodb.net/"
+mongo_client = MongoClient(MONGO_URI)
+mongo_db = mongo_client["attendance_db"]
+attendance_collection = mongo_db["attendance_records"]
 
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"webm", "mp4", "mov", "avi", "mkv"}
@@ -322,6 +329,28 @@ def upload_recording():
         face_recognition_instance.update_attendance(present_students, subject, teacher)
         face_recognition_instance.mark_absentees(absentees, subject, teacher)
 
+        # Save attendance to MongoDB
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        mongo_records = []
+        for name in present_students:
+            mongo_records.append({
+                "student_name": name,
+                "subject": subject,
+                "teacher": teacher,
+                "date": current_date,
+                "status": "Present",
+            })
+        for name in absentees:
+            mongo_records.append({
+                "student_name": name,
+                "subject": subject,
+                "teacher": teacher,
+                "date": current_date,
+                "status": "Absent",
+            })
+        if mongo_records:
+            attendance_collection.insert_many(mongo_records)
+
         return render_template(
             "results.html",
             detected_names=sorted(present_students),
@@ -361,6 +390,75 @@ def download_attendance():
         download_name=f"{safe_subject}_attendance.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
+
+
+@app.route("/mark_present", methods=["POST"])
+def mark_present():
+    data = request.get_json()
+    names = data.get("names", [])
+    subject = data.get("subject", "").strip()
+
+    if not names:
+        return jsonify({"success": False, "error": "No names provided"}), 400
+
+    current_date = datetime.now().strftime("%Y-%m-%d")
+
+    # Update SQLite
+    conn = sqlite3.connect("students_attendance.db")
+    c = conn.cursor()
+    for name in names:
+        cleaned = sanitize_student_name(name)
+        if not cleaned:
+            continue
+        c.execute("SELECT id FROM students WHERE name = ?", (cleaned,))
+        row = c.fetchone()
+        if row:
+            c.execute(
+                "UPDATE attendance SET status = 'Present' WHERE student_id = ? AND date = ? AND subject = ?",
+                (row[0], current_date, subject),
+            )
+    conn.commit()
+    conn.close()
+
+    # Update MongoDB
+    for name in names:
+        cleaned = sanitize_student_name(name)
+        if not cleaned:
+            continue
+        attendance_collection.update_one(
+            {"student_name": cleaned, "date": current_date, "subject": subject},
+            {"$set": {"status": "Present"}},
+        )
+
+    return jsonify({"success": True})
+
+
+@app.route("/attendance_percentage")
+def attendance_percentage():
+    pipeline = [
+        {
+            "$group": {
+                "_id": "$student_name",
+                "total": {"$sum": 1},
+                "present": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Present"]}, 1, 0]}
+                },
+            }
+        },
+        {"$sort": {"_id": 1}},
+    ]
+    results = list(attendance_collection.aggregate(pipeline))
+    students = []
+    for r in results:
+        percentage = round((r["present"] / r["total"]) * 100, 2) if r["total"] > 0 else 0
+        students.append({
+            "name": r["_id"],
+            "total_classes": r["total"],
+            "present": r["present"],
+            "absent": r["total"] - r["present"],
+            "percentage": percentage,
+        })
+    return jsonify(students)
 
 
 if __name__ == "__main__":

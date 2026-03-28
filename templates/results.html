@@ -93,6 +93,87 @@
         .download {
             background: #7a6d5c;
         }
+
+        .percentage-btn {
+            background: #4a6fa5;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #fffaf2;
+            border-radius: 18px;
+            padding: 28px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal h2 {
+            margin-bottom: 16px;
+        }
+
+        .modal table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modal th, .modal td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee3d3;
+        }
+
+        .modal th {
+            background: #f0e8db;
+            font-weight: bold;
+        }
+
+        .bar-cell {
+            width: 35%;
+        }
+
+        .bar-bg {
+            background: #eee3d3;
+            border-radius: 8px;
+            height: 22px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.5s ease;
+        }
+
+        .bar-fill.high { background: #1f6f5f; }
+        .bar-fill.mid  { background: #b8860b; }
+        .bar-fill.low  { background: #9b2c2c; }
+
+        .close-btn {
+            background: #9b2c2c;
+            margin-top: 18px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #7a6d5c;
+        }
     </style>
 </head>
 <body>
@@ -153,8 +234,69 @@
                 <button type="submit" class="download">Download Excel Sheet</button>
             </form>
 
+            <button class="percentage-btn" onclick="showPercentage()">View Attendance Percentage</button>
+
             <a href="{{ url_for('index') }}">Record Another Video</a>
         </div>
+
+        <div class="overlay" id="percentageOverlay">
+            <div class="modal">
+                <h2>Overall Attendance Percentage</h2>
+                <div id="percentageContent">
+                    <p class="loading">Loading...</p>
+                </div>
+                <button class="close-btn" onclick="closeModal()">Close</button>
+            </div>
+        </div>
     </main>
+
+    <script>
+        function showPercentage() {
+            document.getElementById('percentageOverlay').classList.add('active');
+            document.getElementById('percentageContent').innerHTML = '<p class="loading">Loading...</p>';
+
+            fetch('/attendance_percentage')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        document.getElementById('percentageContent').innerHTML =
+                            '<p>No attendance records found in the database.</p>';
+                        return;
+                    }
+
+                    let html = '<table><thead><tr>' +
+                        '<th>Student</th><th>Present</th><th>Absent</th><th>Total</th>' +
+                        '<th class="bar-cell">Percentage</th></tr></thead><tbody>';
+
+                    data.forEach(s => {
+                        const level = s.percentage >= 75 ? 'high' : s.percentage >= 50 ? 'mid' : 'low';
+                        html += '<tr>' +
+                            '<td>' + s.name + '</td>' +
+                            '<td>' + s.present + '</td>' +
+                            '<td>' + s.absent + '</td>' +
+                            '<td>' + s.total_classes + '</td>' +
+                            '<td class="bar-cell"><div class="bar-bg">' +
+                            '<div class="bar-fill ' + level + '" style="width:' + s.percentage + '%"></div>' +
+                            '</div><small>' + s.percentage + '%</small></td>' +
+                            '</tr>';
+                    });
+
+                    html += '</tbody></table>';
+                    document.getElementById('percentageContent').innerHTML = html;
+                })
+                .catch(() => {
+                    document.getElementById('percentageContent').innerHTML =
+                        '<p style="color:#9b2c2c">Failed to load attendance data. Please try again.</p>';
+                });
+        }
+
+        function closeModal() {
+            document.getElementById('percentageOverlay').classList.remove('active');
+        }
+
+        document.getElementById('percentageOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
 </body>
 </html>

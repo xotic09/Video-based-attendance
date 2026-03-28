@@ -6,4 +6,5 @@ scikit-learn
 Pillow
 facenet
 mtcnn
+pymongo
 
