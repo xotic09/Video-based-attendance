@@ -2,132 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recorded Video Attendance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Record Attendance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <style>
-        :root {
-            --bg: #f4f1ea;
-            --panel: #fffaf2;
-            --border: #d8cdbd;
-            --text: #2b241c;
-            --accent: #1f6f5f;
-            --accent-dark: #174f44;
-            --danger: #9b2c2c;
+        .page-header { margin-bottom: 20px; }
+
+        .page-header h1 {
+            margin: 0 0 6px;
+            font-size: 1.4rem;
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Georgia, "Times New Roman", serif;
-            color: var(--text);
-            background:
-                radial-gradient(circle at top left, rgba(31, 111, 95, 0.12), transparent 30%),
-                linear-gradient(135deg, #efe7da, #f9f6ef 55%, #e8ddd0);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0;
-        }
-
-        .topbar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 28px;
-            background: var(--panel);
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(60, 44, 20, 0.06);
-        }
-
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .topbar-left a {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
+        .page-header p {
+            margin: 0 0 4px;
             font-size: 0.9rem;
-        }
-
-        .topbar-left a:hover { text-decoration: underline; }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 0.9rem;
-        }
-
-        .class-badge {
-            background: #4a6fa5;
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .logout-link {
-            color: var(--danger);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .shell {
-            width: min(900px, 100%);
-            background: rgba(255, 250, 242, 0.95);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 28px;
-            box-shadow: 0 24px 60px rgba(60, 44, 20, 0.14);
-            margin: 24px;
-        }
-
-        h1 {
-            margin: 0 0 8px;
-            font-size: clamp(2rem, 4vw, 3rem);
-        }
-
-        p {
-            margin: 0 0 16px;
+            color: var(--muted);
             line-height: 1.5;
         }
 
-        .meta {
-            color: #5b5146;
-            font-size: 0.95rem;
+        .page-header .meta-note {
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        @media (min-width: 640px) {
+            .page-header h1 { font-size: 1.8rem; }
         }
 
         .video-grid {
             display: grid;
-            gap: 20px;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            margin: 24px 0;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
         }
 
-        .panel {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 18px;
+        @media (min-width: 768px) {
+            .video-grid { grid-template-columns: 1fr 1fr; gap: 18px; }
+        }
+
+        .video-panel {
+            padding: 14px !important;
+            background: rgba(255, 255, 255, 0.82) !important;
+        }
+
+        .video-panel h2 {
+            margin: 0 0 10px;
+            font-size: 1rem;
+            font-weight: 700;
         }
 
         .video-frame {
             position: relative;
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             overflow: hidden;
+            aspect-ratio: 16 / 9;
+            background: #0f0a1a;
         }
 
         .video-frame.is-blocked video {
-            filter: blur(8px) brightness(0.3);
+            filter: blur(8px) brightness(0.5);
+        }
+
+        .video-frame.is-user-camera video {
+            transform: scaleX(-1);
         }
 
         .video-overlay {
@@ -136,110 +74,202 @@
             display: grid;
             place-items: center;
             padding: 16px;
-            background: rgba(17, 17, 17, 0.58);
-            color: #f7f0e5;
-            font-size: 1rem;
+            background: rgba(15, 10, 26, 0.6);
+            color: #fff;
+            font-size: 0.9rem;
             font-weight: 700;
             text-align: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 160ms ease;
+            transition: opacity 200ms var(--ease);
         }
 
-        .video-frame.is-blocked .video-overlay {
-            opacity: 1;
-        }
+        .video-frame.is-blocked .video-overlay { opacity: 1; }
 
         video {
+            display: block;
             width: 100%;
-            background: #1a1a1a;
-            border-radius: 12px;
-            aspect-ratio: 4 / 3;
+            border-radius: var(--radius-md);
+            background: #0f0a1a;
         }
 
-        form {
-            display: grid;
+        .video-frame video {
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #recordedPreview {
+            aspect-ratio: 3 / 4;
+            object-fit: contain;
+        }
+
+        .recording-form {
+            display: flex;
+            flex-direction: column;
             gap: 14px;
+            margin-bottom: 16px;
         }
 
-        label {
-            display: grid;
+        .form-group {
+            display: flex;
+            flex-direction: column;
             gap: 6px;
+        }
+
+        .form-group label {
             font-weight: 600;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px 14px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            font: inherit;
-            background: #fff;
-        }
-
-        input[readonly] {
-            background: #f0e8db;
-            color: #5b5146;
-            cursor: not-allowed;
+            font-size: 0.88rem;
+            color: var(--muted-strong);
         }
 
         .controls {
             display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 8px;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        button {
-            border: 0;
-            border-radius: 999px;
-            padding: 12px 18px;
-            font: inherit;
-            cursor: pointer;
-            color: #fff;
-            background: var(--accent);
+        .controls button {
+            width: 100%;
+            min-height: 48px;
+            font-size: 0.95rem;
         }
 
-        button:hover {
-            background: var(--accent-dark);
+        @media (min-width: 480px) {
+            .controls { flex-direction: row; }
+            .controls button { width: auto; flex: 1; }
         }
 
-        button:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-        }
-
-        .secondary {
-            background: #7a6d5c;
-        }
-
-        .danger {
-            background: var(--danger);
-        }
-
-        .status {
+        .status-text {
             min-height: 24px;
             font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--muted-strong);
         }
 
-        .tips {
-            margin: 0;
-            padding-left: 18px;
+        .helper-note {
+            margin: 8px 0 0;
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.5;
         }
 
-        @media (max-width: 640px) {
-            .shell {
-                padding: 20px;
-            }
+        .capture-hero {
+            margin-bottom: 16px;
+            padding: 14px;
+            border: 1px solid rgba(139, 92, 246, 0.18);
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.45), transparent 42%),
+                linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(59, 130, 246, 0.12));
+            box-shadow: 0 16px 36px rgba(139, 92, 246, 0.14);
+        }
+
+        .capture-hero .helper-note {
+            margin-top: 10px;
+            text-align: center;
+            color: var(--muted-strong);
+        }
+
+        .capture-button {
+            position: relative;
+            width: 100%;
+            min-height: 60px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed 48%, #3b82f6);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 0.01em;
+            box-shadow:
+                0 14px 30px rgba(124, 58, 237, 0.28),
+                inset 0 1px 0 rgba(255, 255, 255, 0.22);
+            transition:
+                transform 180ms var(--ease),
+                box-shadow 180ms var(--ease),
+                filter 180ms var(--ease);
+        }
+
+        .capture-button::after {
+            content: "";
+            position: absolute;
+            inset: 1px;
+            border-radius: 15px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 42%);
+            pointer-events: none;
+        }
+
+        .capture-button:hover {
+            transform: translateY(-1px);
+            box-shadow:
+                0 18px 36px rgba(124, 58, 237, 0.34),
+                inset 0 1px 0 rgba(255, 255, 255, 0.22);
+            filter: saturate(1.06);
+        }
+
+        .capture-button:active {
+            transform: translateY(0);
+        }
+
+        .tips-section {
+            padding: 14px 16px !important;
+            background: rgba(255, 255, 255, 0.75) !important;
+        }
+
+        .tips-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            background: none !important;
+            color: var(--text-strong) !important;
+            padding: 0 !important;
+            min-height: 32px;
+            box-shadow: none !important;
+            border: none !important;
+            font-size: 1rem;
+            font-weight: 700;
+            width: 100%;
+            text-align: left;
+        }
+
+        .tips-toggle:hover { transform: none; filter: none; }
+
+        .tips-toggle .chevron {
+            transition: transform 0.3s var(--ease);
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .tips-toggle.open .chevron { transform: rotate(180deg); }
+
+        .tips-list {
+            margin: 12px 0 0;
+            padding-left: 20px;
+            display: none;
+        }
+
+        .tips-list.open {
+            display: block;
+            animation: fadeIn 0.3s var(--ease);
+        }
+
+        .tips-list li {
+            padding: 6px 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+            border-bottom: none !important;
         }
     </style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
+    <div class="gradient-orb gradient-orb-1"></div>
+    <div class="gradient-orb gradient-orb-3"></div>
+
     {% if user %}
     <div class="topbar">
         <div class="topbar-left">
-            <a href="/teacher">&larr; Back to Dashboard</a>
+            <a href="/teacher">&larr; Back</a>
             {% if class_info %}
                 <span class="class-badge">{{ class_info.code }}</span>
             {% endif %}
@@ -251,59 +281,82 @@
     </div>
     {% endif %}
 
-    <main class="shell">
-        <h1>{% if class_info %}{{ class_info.code }} - {{ class_info.name }}{% else %}Recorded Attendance Capture{% endif %}</h1>
-        <p>Record a short classroom video, then upload it for attendance processing. The backend samples frames every {{ frame_interval }} frames and marks a student present after at least {{ min_present_detections }} confident detections.</p>
-        <p class="meta">Recommended recording: 10 seconds, slow camera movement, clear front-facing student visibility.</p>
+    <main>
+        <div class="page-header">
+            <h1>{% if class_info %}{{ class_info.code }} - {{ class_info.name }}{% else %}Record Attendance{% endif %}</h1>
+            <p>Record a short classroom video, then upload it for attendance processing. The backend samples frames every {{ frame_interval }} frames and marks a student present after at least {{ min_present_detections }} confident detections.</p>
+            <p class="meta-note">Recommended: 10 seconds, slow camera pan, clear front-facing visibility.</p>
+        </div>
 
         <div class="video-grid">
-            <section class="panel">
+            <!--
+            <section class="video-panel">
                 <h2>Live Camera</h2>
                 <div class="video-frame" id="livePreviewFrame">
                     <video id="livePreview" autoplay muted playsinline></video>
-                    <div class="video-overlay" id="livePreviewOverlay">Live preview blocked after recording</div>
+                    <div class="video-overlay">Live preview blocked after recording</div>
                 </div>
+                <div class="controls" style="margin-top: 14px;">
+                    <button type="button" class="btn-assign" id="enableCameraBtn">Enable Camera</button>
+                    <button type="button" class="btn-create" id="switchCameraBtn" disabled>Use Front Camera</button>
+                    <button type="button" class="btn-create" id="startBtn" disabled>Start Recording</button>
+                    <button type="button" class="btn-delete" id="stopBtn" disabled>Stop Recording</button>
+                </div>
+                <p class="status-text" id="statusText" style="margin-top: 10px; text-align: center;">Tap Enable Camera, or use Phone Camera below.</p>
+                <p class="helper-note" id="cameraHint"></p>
             </section>
-            <section class="panel">
+            -->
+
+            <section class="video-panel">
+                <div class="capture-hero">
+                    <div class="controls">
+                        <button type="button" class="capture-button" id="pickVideoBtn">Record Video</button>
+                    </div>
+                    <p class="helper-note">Or pick a saved clip.</p>
+                </div>
+
                 <h2>Recorded Preview</h2>
                 <video id="recordedPreview" controls playsinline></video>
+
+                <form id="recordingForm" action="/upload_recording" method="post" enctype="multipart/form-data" style="margin-top: 16px;">
+                    {% if class_info %}
+                    <input type="hidden" name="class_id" value="{{ class_info._id }}">
+                    {% endif %}
+                    <input type="file" name="video" id="videoInput" accept="video/*" capture="environment" hidden>
+
+                    <div class="recording-form">
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            {% if class_info %}
+                                <input type="text" name="subject" id="subject" value="{{ class_info.code }} - {{ class_info.name }}" readonly required>
+                            {% else %}
+                                <input type="text" name="subject" id="subject" required placeholder="Enter subject name">
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="teacher">Teacher</label>
+                            {% if teacher_name %}
+                                <input type="text" name="teacher" id="teacher" value="{{ teacher_name }}" readonly required>
+                            {% else %}
+                                <input type="text" name="teacher" id="teacher" required placeholder="Enter teacher name">
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="controls">
+                        <button type="submit" class="btn-assign" id="uploadBtn" disabled style="width: 100%;">Upload For Attendance</button>
+                    </div>
+                    <p class="status-text" id="statusText" style="margin-top: 10px; text-align: center;">Pick a video to begin.</p>
+                </form>
             </section>
         </div>
 
-        <form id="recordingForm" action="/upload_recording" method="post" enctype="multipart/form-data">
-            {% if class_info %}
-            <input type="hidden" name="class_id" value="{{ class_info._id }}">
-            {% endif %}
-            <label>
-                Subject
-                {% if class_info %}
-                    <input type="text" name="subject" id="subject" value="{{ class_info.code }} - {{ class_info.name }}" readonly required>
-                {% else %}
-                    <input type="text" name="subject" id="subject" required>
-                {% endif %}
-            </label>
-            <label>
-                Teacher
-                {% if teacher_name %}
-                    <input type="text" name="teacher" id="teacher" value="{{ teacher_name }}" readonly required>
-                {% else %}
-                    <input type="text" name="teacher" id="teacher" required>
-                {% endif %}
-            </label>
-
-            <div class="controls">
-                <button type="button" id="startBtn">Start Recording</button>
-                <button type="button" class="danger" id="stopBtn" disabled>Stop Recording</button>
-                <button type="submit" class="secondary" id="uploadBtn" disabled>Upload For Attendance</button>
-            </div>
-
-            <input type="file" name="video" id="videoInput" hidden>
-            <p class="status" id="statusText">Camera is initializing...</p>
-        </form>
-
-        <section class="panel">
-            <h2>Recording Tips</h2>
-            <ul class="tips">
+        <section class="tips-section">
+            <button type="button" class="tips-toggle" id="tipsToggle" onclick="toggleTips()">
+                Recording Tips
+                <span class="chevron">v</span>
+            </button>
+            <ul class="tips-list" id="tipsList">
                 <li>Keep the camera steady and pan slowly across the room.</li>
                 <li>Make sure each student is visible for more than one moment.</li>
                 <li>Avoid strong backlight and heavy motion blur.</li>
@@ -312,75 +365,298 @@
     </main>
 
     <script>
+        function toggleTips() {
+            const toggle = document.getElementById("tipsToggle");
+            const list = document.getElementById("tipsList");
+            toggle.classList.toggle("open");
+            list.classList.toggle("open");
+        }
+
+        /*
         const livePreviewFrame = document.getElementById("livePreviewFrame");
         const livePreview = document.getElementById("livePreview");
         const recordedPreview = document.getElementById("recordedPreview");
+        const enableCameraBtn = document.getElementById("enableCameraBtn");
+        const switchCameraBtn = document.getElementById("switchCameraBtn");
         const startBtn = document.getElementById("startBtn");
         const stopBtn = document.getElementById("stopBtn");
+        const pickVideoBtn = document.getElementById("pickVideoBtn");
         const uploadBtn = document.getElementById("uploadBtn");
         const videoInput = document.getElementById("videoInput");
         const statusText = document.getElementById("statusText");
+        const cameraHint = document.getElementById("cameraHint");
         const recordingForm = document.getElementById("recordingForm");
 
         let stream = null;
         let mediaRecorder = null;
         let recordedChunks = [];
+        let selectedVideoFile = null;
+        let recordedPreviewUrl = null;
+        let currentFacingMode = "environment";
 
         function setLivePreviewBlocked(isBlocked) {
             livePreviewFrame.classList.toggle("is-blocked", isBlocked);
-
             if (!isBlocked && stream && livePreview.srcObject !== stream) {
                 livePreview.srcObject = stream;
             }
         }
 
-        async function initCamera() {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                livePreview.srcObject = stream;
-                setLivePreviewBlocked(false);
-                statusText.textContent = "Camera ready. Record a short classroom video.";
-            } catch (error) {
-                statusText.textContent = "Camera access failed. Check browser permissions and reload.";
+        function updateCameraModeUi() {
+            const isFrontCamera = currentFacingMode === "user";
+            livePreviewFrame.classList.toggle("is-user-camera", isFrontCamera);
+            switchCameraBtn.textContent = isFrontCamera ? "Use Back Camera" : "Use Front Camera";
+            videoInput.setAttribute("capture", isFrontCamera ? "user" : "environment");
+        }
+
+        function stopCameraStream() {
+            if (!stream) {
+                return;
+            }
+
+            stream.getTracks().forEach(function (track) {
+                track.stop();
+            });
+
+            stream = null;
+            livePreview.srcObject = null;
+        }
+
+        function browserSupportsLiveRecording() {
+            return Boolean(
+                navigator.mediaDevices &&
+                navigator.mediaDevices.getUserMedia &&
+                typeof MediaRecorder !== "undefined"
+            );
+        }
+
+        function isSecureCameraContext() {
+            return window.isSecureContext || ["localhost", "127.0.0.1"].includes(window.location.hostname);
+        }
+
+        function getRecorderOptions() {
+            if (typeof MediaRecorder === "undefined" || typeof MediaRecorder.isTypeSupported !== "function") {
+                return undefined;
+            }
+
+            const mimeTypes = [
+                "video/webm;codecs=vp9,opus",
+                "video/webm;codecs=vp8,opus",
+                "video/webm",
+                "video/mp4",
+            ];
+
+            for (const mimeType of mimeTypes) {
+                if (MediaRecorder.isTypeSupported(mimeType)) {
+                    return { mimeType: mimeType };
+                }
+            }
+
+            return undefined;
+        }
+
+        function getVideoExtension(mimeType) {
+            const normalized = (mimeType || "").toLowerCase();
+            if (normalized.includes("mp4")) return "mp4";
+            if (normalized.includes("quicktime")) return "mov";
+            return "webm";
+        }
+
+        function updatePreview(file) {
+            selectedVideoFile = file || null;
+            uploadBtn.disabled = !selectedVideoFile;
+
+            if (recordedPreviewUrl) {
+                URL.revokeObjectURL(recordedPreviewUrl);
+                recordedPreviewUrl = null;
+            }
+
+            if (!selectedVideoFile) {
+                recordedPreview.removeAttribute("src");
+                recordedPreview.load();
+                return;
+            }
+
+            recordedPreviewUrl = URL.createObjectURL(selectedVideoFile);
+            recordedPreview.src = recordedPreviewUrl;
+            recordedPreview.load();
+        }
+
+        function buildRecordedFile() {
+            if (!recordedChunks.length) return null;
+
+            const mimeType =
+                (recordedChunks[0] && recordedChunks[0].type) ||
+                (mediaRecorder && mediaRecorder.mimeType) ||
+                "video/webm";
+
+            const blob = new Blob(recordedChunks, { type: mimeType });
+            const file = new File(
+                [blob],
+                "attendance_recording." + getVideoExtension(mimeType),
+                { type: mimeType }
+            );
+
+            updatePreview(file);
+            return file;
+        }
+
+        function explainCameraError(error) {
+            if (!error) {
+                return "Camera access failed. Use Phone Camera below instead.";
+            }
+
+            switch (error.name) {
+                case "NotAllowedError":
+                case "PermissionDeniedError":
+                case "SecurityError":
+                    return "Camera permission was blocked. Allow access in the browser, or use Phone Camera below.";
+                case "NotFoundError":
+                case "DevicesNotFoundError":
+                    return "No camera was found on this device. Use Phone Camera below.";
+                case "NotReadableError":
+                case "TrackStartError":
+                    return "The camera is busy in another app. Close it there and try again.";
+                default:
+                    return "Camera access failed. Use Phone Camera below or retry after reloading.";
+            }
+        }
+
+        function applyInitialRecordingState() {
+            if (!browserSupportsLiveRecording()) {
+                enableCameraBtn.disabled = true;
+                switchCameraBtn.disabled = true;
                 startBtn.disabled = true;
+                statusText.textContent = "This browser cannot record inside the page. Use Phone Camera below.";
+                cameraHint.textContent = "The upload button opens your phone camera or video picker directly.";
+                return;
+            }
+
+            if (!isSecureCameraContext()) {
+                enableCameraBtn.disabled = true;
+                switchCameraBtn.disabled = true;
+                startBtn.disabled = true;
+                statusText.textContent = "Live browser recording on phones needs HTTPS. Use Phone Camera below or open this page over HTTPS.";
+                cameraHint.textContent = "If you open this page on your phone with http://<pc-ip>:5000, the browser may never show a camera permission prompt.";
+                return;
+            }
+
+            enableCameraBtn.disabled = false;
+            switchCameraBtn.disabled = false;
+            startBtn.disabled = true;
+            stopBtn.disabled = true;
+            statusText.textContent = "Tap Enable Camera to request permission on this device.";
+            cameraHint.textContent = "Hold the phone horizontally for a wide classroom preview. If permission does not appear, use Phone Camera below instead.";
+        }
+
+        async function enableCamera(forceRestart) {
+            if (!browserSupportsLiveRecording() || !isSecureCameraContext()) {
+                applyInitialRecordingState();
+                return;
+            }
+
+            if (!forceRestart && stream) {
+                startBtn.disabled = false;
+                statusText.textContent = "Camera ready. Start recording when the class is in frame.";
+                return;
+            }
+
+            try {
+                if (forceRestart) {
+                    stopCameraStream();
+                }
+
+                enableCameraBtn.disabled = true;
+                switchCameraBtn.disabled = true;
+                statusText.textContent = "Requesting camera permission...";
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: currentFacingMode },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        aspectRatio: { ideal: 16 / 9 }
+                    },
+                    audio: false
+                });
+                livePreview.srcObject = stream;
+                await livePreview.play().catch(function () {});
+                setLivePreviewBlocked(false);
+                updateCameraModeUi();
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                switchCameraBtn.disabled = false;
+                statusText.textContent = "Camera ready. Start recording when the class is in frame.";
+            } catch (error) {
+                enableCameraBtn.disabled = false;
+                switchCameraBtn.disabled = false;
+                startBtn.disabled = true;
+                statusText.textContent = explainCameraError(error);
                 console.error(error);
             }
         }
 
-        function buildRecordedFile() {
-            if (!recordedChunks.length) {
-                return null;
+        enableCameraBtn.addEventListener("click", function () {
+            enableCamera(false);
+        });
+
+        switchCameraBtn.addEventListener("click", async function () {
+            const nextFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+            currentFacingMode = nextFacingMode;
+            updateCameraModeUi();
+
+            if (!stream) {
+                statusText.textContent = nextFacingMode === "user"
+                    ? "Front camera selected. Tap Enable Camera."
+                    : "Back camera selected. Tap Enable Camera.";
+                return;
             }
 
-            const blob = new Blob(recordedChunks, { type: "video/webm" });
-            const file = new File([blob], "attendance_recording.webm", { type: blob.type });
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            videoInput.files = dataTransfer.files;
-            recordedPreview.src = URL.createObjectURL(blob);
-            return file;
-        }
+            statusText.textContent = nextFacingMode === "user"
+                ? "Switching to front camera..."
+                : "Switching to back camera...";
 
-        startBtn.addEventListener("click", () => {
+            await enableCamera(true);
+        });
+
+        pickVideoBtn.addEventListener("click", function () {
+            videoInput.click();
+        });
+
+        videoInput.addEventListener("change", function () {
+            const file = videoInput.files && videoInput.files[0];
+            if (!file) {
+                return;
+            }
+
+            updatePreview(file);
+            statusText.textContent = "Video selected. Submit to generate attendance.";
+        });
+
+        startBtn.addEventListener("click", function () {
             if (!stream) {
-                statusText.textContent = "Camera is not available.";
+                statusText.textContent = "Tap Enable Camera first, or use Phone Camera below.";
                 return;
             }
 
             setLivePreviewBlocked(false);
             recordedChunks = [];
-            const recorderOptions = MediaRecorder.isTypeSupported("video/webm")
-                ? { mimeType: "video/webm" }
-                : undefined;
-            mediaRecorder = new MediaRecorder(stream, recorderOptions);
+            updatePreview(null);
+            videoInput.value = "";
 
-            mediaRecorder.ondataavailable = (event) => {
+            try {
+                mediaRecorder = new MediaRecorder(stream, getRecorderOptions());
+            } catch (error) {
+                statusText.textContent = "This browser could not start recording. Use Phone Camera below instead.";
+                console.error(error);
+                return;
+            }
+
+            mediaRecorder.ondataavailable = function (event) {
                 if (event.data && event.data.size > 0) {
                     recordedChunks.push(event.data);
                 }
             };
 
-            mediaRecorder.onstop = () => {
+            mediaRecorder.onstop = function () {
                 const file = buildRecordedFile();
                 uploadBtn.disabled = !file;
                 statusText.textContent = file
@@ -391,33 +667,165 @@
             mediaRecorder.start();
             startBtn.disabled = true;
             stopBtn.disabled = false;
+            switchCameraBtn.disabled = true;
             uploadBtn.disabled = true;
             statusText.textContent = "Recording in progress...";
         });
 
-        stopBtn.addEventListener("click", () => {
+        stopBtn.addEventListener("click", function () {
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.stop();
             }
             setLivePreviewBlocked(true);
             startBtn.disabled = false;
             stopBtn.disabled = true;
+            switchCameraBtn.disabled = false;
         });
 
-        recordingForm.addEventListener("submit", (event) => {
-            if (!videoInput.files.length) {
-                event.preventDefault();
-                statusText.textContent = "Record a video before uploading.";
+        recordingForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const file = selectedVideoFile || (videoInput.files && videoInput.files[0]);
+            if (!file) {
+                statusText.textContent = "Record or choose a video before uploading.";
                 return;
             }
 
+            const formData = new FormData(recordingForm);
+            formData.set("video", file, file.name);
+
             uploadBtn.disabled = true;
+            enableCameraBtn.disabled = true;
+            switchCameraBtn.disabled = true;
+            pickVideoBtn.disabled = true;
             startBtn.disabled = true;
             stopBtn.disabled = true;
             statusText.textContent = "Uploading video and processing attendance...";
+
+            try {
+                const response = await fetch(recordingForm.action, {
+                    method: "POST",
+                    body: formData,
+                    credentials: "same-origin"
+                });
+                const responseText = await response.text();
+
+                if (!response.ok) {
+                    throw new Error(responseText || "Upload failed.");
+                }
+
+                document.open();
+                document.write(responseText);
+                document.close();
+            } catch (error) {
+                pickVideoBtn.disabled = false;
+
+                if (stream) {
+                    enableCameraBtn.disabled = true;
+                    switchCameraBtn.disabled = false;
+                    startBtn.disabled = false;
+                } else {
+                    applyInitialRecordingState();
+                }
+
+                uploadBtn.disabled = false;
+                statusText.textContent = error.message || "Upload failed. Try again.";
+                console.error(error);
+            }
         });
 
-        initCamera();
+        window.addEventListener("beforeunload", function () {
+            stopCameraStream();
+        });
+
+        updateCameraModeUi();
+        applyInitialRecordingState();
+        */
+
+        const recordedPreview = document.getElementById("recordedPreview");
+        const pickVideoBtn = document.getElementById("pickVideoBtn");
+        const uploadBtn = document.getElementById("uploadBtn");
+        const videoInput = document.getElementById("videoInput");
+        const statusText = document.getElementById("statusText");
+        const recordingForm = document.getElementById("recordingForm");
+
+        let selectedVideoFile = null;
+        let recordedPreviewUrl = null;
+
+        function updatePreview(file) {
+            selectedVideoFile = file || null;
+            uploadBtn.disabled = !selectedVideoFile;
+
+            if (recordedPreviewUrl) {
+                URL.revokeObjectURL(recordedPreviewUrl);
+                recordedPreviewUrl = null;
+            }
+
+            if (!selectedVideoFile) {
+                recordedPreview.removeAttribute("src");
+                recordedPreview.load();
+                return;
+            }
+
+            recordedPreviewUrl = URL.createObjectURL(selectedVideoFile);
+            recordedPreview.src = recordedPreviewUrl;
+            recordedPreview.load();
+        }
+
+        pickVideoBtn.addEventListener("click", function () {
+            videoInput.click();
+        });
+
+        videoInput.addEventListener("change", function () {
+            const file = videoInput.files && videoInput.files[0];
+            if (!file) {
+                return;
+            }
+
+            updatePreview(file);
+            statusText.textContent = "Video ready. Upload when ready.";
+        });
+
+        recordingForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const file = selectedVideoFile || (videoInput.files && videoInput.files[0]);
+            if (!file) {
+                statusText.textContent = "Record or choose a video before uploading.";
+                return;
+            }
+
+            const formData = new FormData(recordingForm);
+            formData.set("video", file, file.name);
+
+            uploadBtn.disabled = true;
+            pickVideoBtn.disabled = true;
+            statusText.textContent = "Uploading video and processing attendance...";
+
+            try {
+                const response = await fetch(recordingForm.action, {
+                    method: "POST",
+                    body: formData,
+                    credentials: "same-origin"
+                });
+                if (!response.ok) {
+                    const responseText = await response.text();
+                    throw new Error(responseText || "Upload failed.");
+                }
+
+                if (response.redirected && response.url) {
+                    window.location.href = response.url;
+                    return;
+                }
+
+                window.location.reload();
+            } catch (error) {
+                pickVideoBtn.disabled = false;
+                uploadBtn.disabled = false;
+                statusText.textContent = error.message || "Upload failed. Try again.";
+                console.error(error);
+            }
+        });
     </script>
 </body>
 </html>

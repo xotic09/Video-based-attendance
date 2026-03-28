@@ -46,8 +46,70 @@ UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"webm", "mp4", "mov", "avi", "mkv"}
 FRAME_SAMPLE_INTERVAL = 15
 MIN_PRESENT_DETECTIONS = 2
+RESULT_PAGE_TTL = timedelta(hours=2)
+RESULT_PAGE_CACHE = {}
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+def resolve_ssl_context():
+    ssl_mode = os.environ.get("FLASK_SSL_MODE", "off").strip().lower()
+    if ssl_mode in {"off", "false", "0", "none", "http"}:
+        return None
+
+    if ssl_mode not in {"auto", "adhoc"}:
+        print(
+            f"Warning: unknown FLASK_SSL_MODE={ssl_mode!r}. "
+            "Falling back to automatic SSL detection."
+        )
+        ssl_mode = "auto"
+
+    try:
+        import cryptography  # noqa: F401
+    except ImportError:
+        if ssl_mode == "adhoc":
+            raise RuntimeError(
+                "FLASK_SSL_MODE=adhoc requires the cryptography package. "
+                "Install it with `pip install cryptography` or set FLASK_SSL_MODE=off."
+            ) from None
+
+        print(
+            "Warning: cryptography is not installed, so Flask will start without "
+            "ad-hoc HTTPS. Use http://127.0.0.1:5000 locally, or install "
+            "`cryptography` to enable HTTPS for camera access from other devices."
+        )
+        return None
+
+    return "adhoc"
+
+
+def prune_result_page_cache():
+    cutoff = datetime.now(timezone.utc) - RESULT_PAGE_TTL
+    expired_ids = [
+        result_id
+        for result_id, payload in RESULT_PAGE_CACHE.items()
+        if payload["created_at"] < cutoff
+    ]
+    for result_id in expired_ids:
+        RESULT_PAGE_CACHE.pop(result_id, None)
+
+
+def store_result_page(context):
+    prune_result_page_cache()
+    result_id = uuid.uuid4().hex
+    RESULT_PAGE_CACHE[result_id] = {
+        "created_at": datetime.now(timezone.utc),
+        "context": context,
+    }
+    return result_id
+
+
+def get_result_page(result_id):
+    prune_result_page_cache()
+    payload = RESULT_PAGE_CACHE.get(result_id)
+    if not payload:
+        return None
+    return payload["context"]
 
 
 # ─── Database Init ───────────────────────────────────────────────────
@@ -861,6 +923,16 @@ def student_dashboard():
 # ─── Core Processing Routes ─────────────────────────────────────────
 
 
+@app.route("/results/<result_id>")
+@role_required("teacher")
+def attendance_results(result_id):
+    result_context = get_result_page(result_id)
+    if not result_context:
+        return redirect(url_for("teacher_dashboard"))
+
+    return render_template("results.html", **result_context)
+
+
 @app.route("/upload_recording", methods=["POST"])
 @login_required
 def upload_recording():
@@ -933,17 +1005,19 @@ def upload_recording():
         if mongo_records:
             attendance_collection.insert_many(mongo_records)
 
-        return render_template(
-            "results.html",
-            detected_names=sorted(present_students),
-            absentees=sorted(absentees),
-            processed_frames=processed_frames,
-            total_frames=total_frames,
-            attendance_rows=attendance_rows,
-            subject=subject,
-            class_id=class_id or "",
-            user=getattr(request, "user", None),
+        result_id = store_result_page(
+            {
+                "detected_names": sorted(present_students),
+                "absentees": sorted(absentees),
+                "processed_frames": processed_frames,
+                "total_frames": total_frames,
+                "attendance_rows": attendance_rows,
+                "subject": subject,
+                "class_id": class_id or "",
+                "user": getattr(request, "user", None),
+            }
         )
+        return redirect(url_for("attendance_results", result_id=result_id))
     except Exception as e:
         print(f"Error: {e}")
         return "An error occurred while processing the recording", 500
@@ -1089,4 +1163,4 @@ def attendance_percentage():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", ssl_context=resolve_ssl_context())

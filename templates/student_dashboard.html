@@ -2,401 +2,327 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Attendance - Attendance System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>My Attendance — Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <style>
-        :root {
-            --bg: #241307;
-            --bg-soft: #34200d;
-            --panel: #4b2706;
-            --panel-soft: #5c3410;
-            --card: #3d2208;
-            --border: rgba(238, 200, 148, 0.18);
-            --text: #f7efe3;
-            --muted: #d1b896;
-            --accent: #9ff1dc;
-            --danger: #ff8b7b;
-            --shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Georgia, "Times New Roman", serif;
-            color: var(--text);
-            background:
-                radial-gradient(circle at top, rgba(141, 88, 20, 0.28), transparent 34%),
-                linear-gradient(180deg, #452608 0%, var(--bg) 14%, #231507 100%);
-        }
-
         a { color: inherit; }
 
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 18px;
-            padding: 18px 28px;
-            background: rgba(36, 19, 7, 0.9);
-            border-bottom: 1px solid rgba(230, 179, 98, 0.16);
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            backdrop-filter: blur(10px);
-        }
-
-        .topbar h1 {
-            margin: 0;
-            font-size: 1.45rem;
-            color: #fff5ea;
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-            font-size: 0.95rem;
-            color: var(--muted);
-        }
-
-        .role-badge {
-            background: linear-gradient(135deg, #d39a31, #b97814);
-            color: #fff6e6;
-            padding: 5px 12px;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-        }
-
-        .logout-link {
-            color: var(--danger);
-            text-decoration: none;
-            font-weight: 700;
-        }
-
-        .logout-link:hover { text-decoration: underline; }
-
-        main {
-            max-width: 1240px;
-            margin: 0 auto;
-            padding: 34px 24px 46px;
-        }
-
+        /* ── Summary Row ── */
         .summary-row {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 18px;
-            margin-bottom: 28px;
-        }
-
-        .stat-card {
-            background: rgba(77, 48, 17, 0.7);
-            border: 1px solid rgba(236, 193, 122, 0.12);
-            border-radius: 18px;
-            padding: 20px 18px;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-
-        .stat-card .number {
-            font-size: 2.35rem;
-            font-weight: 700;
-            line-height: 1;
-            color: var(--accent);
-        }
-
-        .stat-card .label {
-            margin-top: 8px;
-            color: #ead5b8;
-            font-size: 1rem;
-        }
-
-        .panel {
-            background: linear-gradient(180deg, rgba(83, 43, 8, 0.92), rgba(60, 30, 8, 0.96));
-            border: 1px solid var(--border);
-            border-radius: 28px;
-            padding: 28px;
-            box-shadow: var(--shadow);
-        }
-
-        .section-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            gap: 20px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
             margin-bottom: 24px;
         }
 
-        .eyebrow {
-            margin: 0 0 8px;
-            color: #d6b27c;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            font-size: 0.78rem;
+        .stat-card {
+            background: rgba(255, 255, 255, 0.8) !important;
+            border: 1px solid rgba(139, 92, 246, 0.1) !important;
+            border-radius: var(--radius-lg) !important;
+            padding: 16px 12px;
+            text-align: center;
+            box-shadow: var(--shadow-sm) !important;
+            backdrop-filter: blur(10px);
         }
 
-        h2 {
-            margin: 0;
-            font-size: clamp(2rem, 4vw, 3rem);
-            color: #fff8f0;
+        .stat-card .number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--purple-600), var(--purple-400));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .stat-card .label {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 500;
+        }
+
+        @media (min-width: 480px) {
+            .stat-card .number { font-size: 2rem; }
+            .stat-card .label { font-size: 0.88rem; }
+        }
+
+        /* ── Panel ── */
+        .main-panel {
+            padding: 20px 16px !important;
+            background: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .section-head {
+            margin-bottom: 20px;
+        }
+
+        .eyebrow {
+            margin: 0 0 4px;
+            color: var(--purple-500);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .section-head h2 {
+            margin: 0 0 6px;
+            font-size: 1.35rem;
         }
 
         .section-note {
             margin: 0;
-            max-width: 360px;
             color: var(--muted);
-            line-height: 1.6;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
+            line-height: 1.5;
         }
 
+        @media (min-width: 640px) {
+            .main-panel { padding: 28px !important; }
+            .section-head h2 { font-size: 1.7rem; }
+            .section-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                gap: 20px;
+            }
+            .section-note { max-width: 360px; }
+        }
+
+        /* ── Subject Cards Grid ── */
         .subjects-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 20px;
+            grid-template-columns: 1fr;
+            gap: 14px;
         }
 
+        @media (min-width: 640px) {
+            .subjects-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+        }
+
+        @media (min-width: 1024px) {
+            .subjects-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* ── Subject Card ── */
         .subject-card {
-            background: linear-gradient(180deg, rgba(64, 35, 11, 0.98), rgba(47, 25, 7, 0.98));
-            border: 1px solid rgba(255, 222, 173, 0.12);
-            border-radius: 24px;
-            padding: 22px;
-            min-height: 240px;
+            background: rgba(255, 255, 255, 0.85) !important;
+            border: 1px solid rgba(139, 92, 246, 0.1) !important;
+            border-radius: var(--radius-xl) !important;
+            padding: 18px !important;
             position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow-md) !important;
         }
 
         .subject-card::before {
             content: "";
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 34%);
+            background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.04), transparent 40%);
             pointer-events: none;
         }
 
+        .subject-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg), 0 0 30px rgba(139, 92, 246, 0.08) !important;
+        }
+
         .subject-card.low {
-            --ring-color: #ef6a5f;
-            --ring-track: rgba(239, 106, 95, 0.14);
-            --pill-bg: rgba(239, 106, 95, 0.14);
-            --pill-text: #ffb8b0;
+            --ring-color: #ef4444;
+            --ring-track: rgba(239, 68, 68, 0.1);
+            --pill-bg: rgba(239, 68, 68, 0.08);
+            --pill-text: #dc2626;
         }
 
         .subject-card.mid {
-            --ring-color: #efba4f;
-            --ring-track: rgba(239, 186, 79, 0.14);
-            --pill-bg: rgba(239, 186, 79, 0.14);
-            --pill-text: #ffd990;
+            --ring-color: #f59e0b;
+            --ring-track: rgba(245, 158, 11, 0.1);
+            --pill-bg: rgba(245, 158, 11, 0.08);
+            --pill-text: #d97706;
         }
 
         .subject-card.high {
-            --ring-color: #62dfbe;
-            --ring-track: rgba(98, 223, 190, 0.14);
-            --pill-bg: rgba(98, 223, 190, 0.14);
-            --pill-text: #bff7e8;
+            --ring-color: #10b981;
+            --ring-track: rgba(16, 185, 129, 0.1);
+            --pill-bg: rgba(16, 185, 129, 0.08);
+            --pill-text: #059669;
         }
 
         .subject-layout {
             position: relative;
             z-index: 1;
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 132px;
-            gap: 18px;
-            align-items: center;
-            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        @media (min-width: 480px) {
+            .subject-layout {
+                display: grid;
+                grid-template-columns: 1fr 110px;
+                gap: 14px;
+                align-items: center;
+            }
         }
 
         .subject-code {
-            margin: 0 0 10px;
-            color: #ddb981;
-            font-size: 0.8rem;
-            letter-spacing: 0.12em;
+            margin: 0 0 6px;
+            color: var(--purple-500);
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
+            font-weight: 700;
         }
 
         .subject-title {
             margin: 0;
-            font-size: 1.55rem;
-            line-height: 1.15;
-            color: #fff8ed;
+            font-size: 1.2rem;
+            line-height: 1.2;
+            color: var(--text-strong);
         }
 
         .status-pill {
             display: inline-flex;
             align-items: center;
-            margin-top: 14px;
-            padding: 6px 12px;
-            border-radius: 999px;
+            margin-top: 10px;
+            padding: 5px 10px;
+            border-radius: var(--radius-full);
             background: var(--pill-bg);
             color: var(--pill-text);
-            font-size: 0.84rem;
+            font-size: 0.78rem;
             font-weight: 700;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.03em;
         }
 
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-            margin-top: 18px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 14px;
         }
 
         .metric {
-            background: rgba(255, 245, 229, 0.05);
-            border: 1px solid rgba(255, 222, 173, 0.08);
-            border-radius: 16px;
-            padding: 12px 14px;
+            background: var(--purple-50);
+            border: 1px solid rgba(139, 92, 246, 0.08);
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
         }
 
         .metric-label {
             display: block;
-            color: #d1b896;
-            font-size: 0.8rem;
-            margin-bottom: 5px;
+            color: var(--muted);
+            font-size: 0.72rem;
+            margin-bottom: 3px;
+            font-weight: 500;
         }
 
         .metric-value {
             display: block;
-            color: #fff5e8;
-            font-size: 1.25rem;
+            color: var(--text-strong);
+            font-size: 1.1rem;
             font-weight: 700;
         }
 
+        /* ── Progress Ring ── */
         .subject-visual {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            justify-content: center;
             gap: 12px;
         }
 
+        @media (min-width: 480px) {
+            .subject-visual {
+                flex-direction: column;
+                justify-content: center;
+            }
+        }
+
         .progress-ring {
-            width: 128px;
-            height: 128px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             background: conic-gradient(var(--ring-color) var(--progress), var(--ring-track) 0);
             display: grid;
             place-items: center;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
         }
 
         .progress-ring-inner {
-            width: 92px;
-            height: 92px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
-            background: linear-gradient(180deg, #331a08, #231205);
-            border: 1px solid rgba(255, 222, 173, 0.08);
+            background: #fff;
+            border: 1px solid rgba(139, 92, 246, 0.06);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 8px;
+            box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.04);
         }
 
         .progress-value {
-            color: #fff8ed;
-            font-size: 1.4rem;
-            font-weight: 700;
+            color: var(--text-strong);
+            font-size: 1.1rem;
+            font-weight: 800;
             line-height: 1;
         }
 
         .progress-copy {
-            color: #c8b091;
-            font-size: 0.72rem;
-            margin-top: 6px;
-            letter-spacing: 0.08em;
+            color: var(--muted);
+            font-size: 0.62rem;
+            margin-top: 4px;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
         }
 
         .progress-caption {
             color: var(--pill-text);
-            font-size: 0.88rem;
+            font-size: 0.82rem;
             font-weight: 700;
         }
 
+        @media (min-width: 640px) {
+            .progress-ring { width: 120px; height: 120px; }
+            .progress-ring-inner { width: 86px; height: 86px; }
+            .progress-value { font-size: 1.3rem; }
+        }
+
+        /* ── Empty State ── */
         .empty-state {
             text-align: center;
-            padding: 70px 28px;
-            color: #e0ccb0;
+            padding: 48px 20px !important;
+        }
+
+        .empty-icon {
+            font-size: 2.4rem;
+            margin-bottom: 14px;
         }
 
         .empty-state h2 {
-            font-size: 2rem;
-            margin-bottom: 12px;
+            font-size: 1.4rem;
+            margin: 0 0 10px;
         }
 
         .empty-state p {
-            margin: 8px 0 0;
-            color: #c7ab85;
+            margin: 6px 0 0;
+            max-width: 320px;
+            margin-left: auto;
+            margin-right: auto;
             line-height: 1.6;
-        }
-
-        @media (max-width: 1080px) {
-            .subjects-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
-        @media (max-width: 900px) {
-            .summary-row {
-                grid-template-columns: 1fr;
-            }
-
-            .section-head {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-
-        @media (max-width: 720px) {
-            .subjects-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .subject-layout {
-                grid-template-columns: 1fr;
-            }
-
-            .subject-visual {
-                flex-direction: row;
-                justify-content: flex-start;
-            }
-        }
-
-        @media (max-width: 560px) {
-            .topbar {
-                padding: 16px 18px;
-            }
-
-            main {
-                padding: 24px 16px 36px;
-            }
-
-            .panel {
-                padding: 20px;
-                border-radius: 22px;
-            }
-
-            .subject-card {
-                padding: 18px;
-            }
-
-            .metrics-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .subject-visual {
-                flex-direction: column;
-                align-items: center;
-            }
         }
     </style>
 </head>
 <body>
+    <!-- Dynamic gradient orbs -->
+    <div class="gradient-orb gradient-orb-1"></div>
+    <div class="gradient-orb gradient-orb-2"></div>
+
     <div class="topbar">
         <h1>My Attendance</h1>
         <div class="topbar-right">
@@ -411,26 +337,26 @@
         <div class="summary-row">
             <div class="stat-card">
                 <div class="number">{{ subjects|length }}</div>
-                <div class="label">Assigned Classes</div>
+                <div class="label">Classes</div>
             </div>
             <div class="stat-card">
                 <div class="number">{{ subjects|map(attribute='present')|sum }}</div>
-                <div class="label">Classes Attended</div>
+                <div class="label">Attended</div>
             </div>
             <div class="stat-card">
                 <div class="number">{{ subjects|map(attribute='total_classes')|sum }}</div>
-                <div class="label">Total Classes</div>
+                <div class="label">Total</div>
             </div>
         </div>
 
-        <section class="panel">
+        <section class="main-panel panel">
             <div class="section-head">
                 <div>
                     <p class="eyebrow">Assigned Classes</p>
                     <h2>Attendance by Class</h2>
                 </div>
                 <p class="section-note">
-                    Every assigned class is shown here, including classes with no attendance yet and classes that are exactly at 0% or 100%.
+                    Every assigned class is shown here, including classes with no attendance yet.
                 </p>
             </div>
 
@@ -487,12 +413,11 @@
             </div>
         </section>
         {% else %}
-        <section class="panel">
-            <div class="empty-state">
-                <h2>No Classes Assigned</h2>
-                <p>Your account is not enrolled in any class yet.</p>
-                <p>Once a class is assigned, it will appear here even before the first attendance record is created.</p>
-            </div>
+        <section class="empty-state panel">
+            <div class="empty-icon">📚</div>
+            <h2>No Classes Assigned</h2>
+            <p>Your account is not enrolled in any class yet.</p>
+            <p>Once a class is assigned, it will appear here even before the first attendance record is created.</p>
         </section>
         {% endif %}
     </main>

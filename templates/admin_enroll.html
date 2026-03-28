@@ -2,137 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Enrollment - Attendance System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Student Enrollment — Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <style>
-        :root {
-            --bg: #f4f1ea;
-            --panel: #fffaf2;
-            --border: #d8cdbd;
-            --text: #2b241c;
-            --accent: #1f6f5f;
-            --accent-dark: #174f44;
-            --danger: #9b2c2c;
+        h2 {
+            margin: 0 0 14px;
+            font-size: 1.15rem;
         }
 
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Georgia, "Times New Roman", serif;
-            color: var(--text);
-            background: linear-gradient(160deg, #f2ece3, #fbf8f3);
-            padding: 0;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 28px;
-            background: var(--panel);
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(60, 44, 20, 0.06);
-        }
-
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .topbar-left a {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .topbar-left a:hover { text-decoration: underline; }
-
-        .topbar h1 { margin: 0; font-size: 1.3rem; }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 0.9rem;
-        }
-
-        .role-badge {
-            background: var(--accent);
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .logout-link {
-            color: var(--danger);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .logout-link:hover { text-decoration: underline; }
-
-        main {
-            max-width: 900px;
-            margin: 28px auto;
-            padding: 0 24px;
-        }
-
-        .card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 22px;
-            box-shadow: 0 12px 30px rgba(60, 44, 20, 0.08);
-            margin-bottom: 24px;
-        }
-
-        h2 { margin: 0 0 16px; }
-
-        /* Class selector */
+        /* ── Class Selector ── */
         .class-selector {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .class-selector label {
             font-weight: 600;
-            font-size: 0.92rem;
+            font-size: 0.88rem;
             display: block;
             margin-bottom: 6px;
+            color: var(--muted-strong);
         }
 
         .class-selector select {
-            padding: 10px 14px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            font: inherit;
+            width: 100%;
+            min-height: 48px;
             font-size: 0.95rem;
-            background: #fff;
-            min-width: 300px;
         }
 
-        .class-selector select:focus {
-            outline: 2px solid var(--accent);
-            border-color: var(--accent);
-        }
-
-        /* Enrolled tags */
+        /* ── Enrolled Tags ── */
         .enrolled-section {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .section-label {
-            font-size: 0.82rem;
-            color: #7a6d5c;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 12px;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, var(--purple-100), var(--purple-50));
+            border-radius: var(--radius-full);
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--purple-700);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 0 0 10px;
-            font-weight: 600;
+            letter-spacing: 0.06em;
         }
 
         .enrolled-tags {
@@ -142,153 +57,31 @@
         }
 
         .tag {
-            background: #edf7f4;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            padding: 5px 12px;
-            border-radius: 999px;
+            padding: 6px 14px !important;
+            border-radius: var(--radius-full) !important;
             font-size: 0.84rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-        }
-
-        .tag-remove {
-            background: none !important;
-            border: none;
-            color: var(--danger);
-            font-size: 1.1rem;
-            cursor: pointer;
-            padding: 0;
-            line-height: 1;
-            font-weight: bold;
-            border-radius: 0;
-        }
-
-        .tag-remove:hover {
-            color: #7f1d1d;
-            background: none !important;
+            background: linear-gradient(135deg, var(--purple-50), rgba(139, 92, 246, 0.06)) !important;
+            border: 1px solid var(--purple-200) !important;
+            color: var(--purple-700);
+            animation: fadeIn 0.3s var(--ease) both;
         }
 
         .no-enrolled {
-            color: #7a6d5c;
+            color: var(--muted);
             font-style: italic;
-            font-size: 0.9rem;
-        }
-
-        /* Search box */
-        .search-box {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            font: inherit;
-            font-size: 0.92rem;
-            background: #fff;
-            margin-bottom: 14px;
-        }
-
-        .search-box:focus {
-            outline: 2px solid var(--accent);
-            border-color: var(--accent);
-        }
-
-        /* Student list */
-        .student-list {
-            max-height: 350px;
-            overflow-y: auto;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: #fff;
-        }
-
-        .student-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 16px;
-            border-bottom: 1px solid #f0e8db;
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        .student-item:last-child { border-bottom: 0; }
-
-        .student-item:hover {
-            background: #f7f3ec;
-        }
-
-        .student-item.selected {
-            background: #edf7f4;
-        }
-
-        .student-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--accent);
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .student-info {
-            flex: 1;
-        }
-
-        .student-name {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .student-username {
-            color: #7a6d5c;
-            font-size: 0.82rem;
-        }
-
-        .empty-list {
-            text-align: center;
-            padding: 24px;
-            color: #7a6d5c;
-            font-style: italic;
-        }
-
-        .hidden { display: none !important; }
-
-        /* Enroll button */
-        .enroll-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 16px;
-        }
-
-        .selected-count {
-            font-size: 0.9rem;
-            color: #5b5146;
-            font-weight: 600;
-        }
-
-        button, .btn {
-            border: 0;
-            border-radius: 999px;
-            padding: 10px 20px;
-            font: inherit;
             font-size: 0.88rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: #fff;
-            background: var(--accent);
-            text-decoration: none;
-            display: inline-block;
         }
 
-        button:hover, .btn:hover { background: var(--accent-dark); }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        /* ── Search ── */
+        .search-box {
+            margin-bottom: 12px;
         }
 
+        /* ── Select All ── */
         .select-all-bar {
             display: flex;
             align-items: center;
@@ -296,23 +89,100 @@
             margin-bottom: 10px;
             font-size: 0.88rem;
             font-weight: 600;
-            color: #5b5146;
+            color: var(--muted);
         }
 
-        .select-all-bar input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--accent);
+        .select-all-bar label {
             cursor: pointer;
         }
+
+        /* ── Student List ── */
+        .student-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: var(--radius-md);
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: background 150ms var(--ease);
+            min-height: 52px;
+        }
+
+        .student-item:last-child {
+            border-bottom: 0 !important;
+        }
+
+        .student-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .student-name {
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: var(--text-strong);
+        }
+
+        .student-username {
+            font-size: 0.8rem;
+        }
+
+        .empty-list {
+            text-align: center;
+            padding: 24px;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* ── Enroll Bar ── */
+        .enroll-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 14px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .selected-count {
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .enroll-bar button {
+            min-height: 44px;
+        }
+
+        @media (max-width: 479px) {
+            .enroll-bar {
+                flex-direction: column;
+            }
+
+            .enroll-bar button {
+                width: 100%;
+            }
+        }
+
+        .no-class-msg {
+            text-align: center;
+            padding: 24px;
+            color: var(--muted);
+        }
     </style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
+    <div class="gradient-orb gradient-orb-1"></div>
+    <div class="gradient-orb gradient-orb-2"></div>
+
     <div class="topbar">
         <div class="topbar-left">
-            <a href="/admin">&larr; Back to Dashboard</a>
-            <h1>Student Enrollment</h1>
+            <a href="/admin">&larr; Dashboard</a>
+            <h1>Enrollment</h1>
         </div>
         <div class="topbar-right">
             <span class="role-badge">ADMIN</span>
@@ -326,31 +196,31 @@
             <div class="class-selector">
                 <label for="classSelect">Select Class</label>
                 <select id="classSelect" onchange="onClassChange()">
-                    <option value="">-- Choose a class --</option>
+                    <option value="">— Choose a class —</option>
                     {% for cls in classes %}
                     <option value="{{ cls._id }}"
                         data-enrolled='{{ (cls.enrolled_students or [])|tojson }}'
                         {% if selected_class and cls._id|string == selected_class %}selected{% endif %}>
-                        {{ cls.code }} &mdash; {{ cls.name }}
+                        {{ cls.code }} — {{ cls.name }}
                     </option>
                     {% endfor %}
                 </select>
             </div>
 
-            <!-- Enrolled students for selected class -->
+            <!-- Enrolled students -->
             <div id="enrolledSection" class="enrolled-section hidden">
                 <p class="section-label">Currently Enrolled</p>
                 <div id="enrolledTags" class="enrolled-tags"></div>
             </div>
 
-            <!-- Student selection area -->
+            <!-- Student selection -->
             <div id="studentArea" class="hidden">
                 <p class="section-label">Available Students</p>
                 <input type="text" class="search-box" id="searchBox" placeholder="Search students by name or username..." oninput="filterStudents()">
 
                 <div class="select-all-bar">
                     <input type="checkbox" id="selectAllCb" onchange="toggleSelectAll()">
-                    <label for="selectAllCb" style="cursor:pointer;">Select All</label>
+                    <label for="selectAllCb">Select All</label>
                 </div>
 
                 <form method="post" action="/admin/enroll-students" id="enrollForm">
@@ -364,8 +234,8 @@
                 </form>
             </div>
 
-            <div id="noClassMsg">
-                <p style="color:var(--muted); text-align:center; padding:20px;">Select a class above to manage enrollment.</p>
+            <div id="noClassMsg" class="no-class-msg">
+                <p>Select a class above to manage enrollment.</p>
             </div>
         </div>
     </main>
@@ -396,7 +266,6 @@
             noClassMsg.classList.add('hidden');
             document.getElementById('classIdInput').value = classId;
 
-            // Show enrolled students
             const enrolled = JSON.parse(opt.dataset.enrolled || '[]');
             const tagsDiv = document.getElementById('enrolledTags');
 
@@ -417,7 +286,6 @@
                 enrolledSection.classList.remove('hidden');
             }
 
-            // Build available students list (not already enrolled)
             const available = allStudents.filter(s => !enrolled.includes(s.username));
             const listDiv = document.getElementById('studentList');
 
@@ -438,7 +306,6 @@
                 studentArea.classList.remove('hidden');
             }
 
-            // Reset
             document.getElementById('searchBox').value = '';
             document.getElementById('selectAllCb').checked = false;
             updateCount();
@@ -463,13 +330,11 @@
             document.getElementById('selectedCount').textContent = count + ' selected';
             document.getElementById('enrollBtn').disabled = count === 0;
 
-            // Update item highlight
             document.querySelectorAll('.student-item').forEach(item => {
                 const cb = item.querySelector('input[type="checkbox"]');
                 item.classList.toggle('selected', cb.checked);
             });
 
-            // Update select all state
             const total = document.querySelectorAll('#studentList input[type="checkbox"]').length;
             document.getElementById('selectAllCb').checked = total > 0 && count === total;
         }
@@ -482,7 +347,6 @@
             updateCount();
         }
 
-        // Auto-select class if coming back from enroll/unenroll
         window.addEventListener('DOMContentLoaded', function() {
             const sel = document.getElementById('classSelect');
             if (sel.value) onClassChange();

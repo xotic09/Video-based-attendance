@@ -2,266 +2,203 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ cls.code }} - {{ cls.name }} - Attendance System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{{ cls.code }} — {{ cls.name }} — Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <style>
-        :root {
-            --bg: #f4f1ea;
-            --panel: #fffaf2;
-            --border: #d8cdbd;
-            --text: #2b241c;
-            --accent: #1f6f5f;
-            --accent-dark: #174f44;
-            --danger: #9b2c2c;
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Georgia, "Times New Roman", serif;
-            color: var(--text);
-            background: linear-gradient(160deg, #f2ece3, #fbf8f3);
-            padding: 0;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 28px;
-            background: var(--panel);
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(60, 44, 20, 0.06);
-        }
-
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .topbar-left a {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .topbar-left a:hover { text-decoration: underline; }
-
-        .topbar h1 { margin: 0; font-size: 1.3rem; }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 0.9rem;
-        }
-
-        .role-badge {
-            background: var(--accent);
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .logout-link {
-            color: var(--danger);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .logout-link:hover { text-decoration: underline; }
-
-        main {
-            max-width: 800px;
-            margin: 28px auto;
-            padding: 0 24px;
-        }
-
-        .card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 22px;
-            box-shadow: 0 12px 30px rgba(60, 44, 20, 0.08);
-            margin-bottom: 24px;
-        }
-
-        h2 { margin: 0 0 16px; }
-
+        /* ── Class Header ── */
         .class-header {
             display: flex;
-            align-items: baseline;
-            gap: 12px;
-            margin-bottom: 4px;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .class-code {
-            font-size: 0.85rem;
-            color: #7a6d5c;
-            background: #f0e8db;
+        .class-code-badge {
+            font-size: 0.8rem;
+            color: var(--muted);
+            background: rgba(255, 245, 229, 0.08);
             padding: 4px 12px;
-            border-radius: 999px;
-            font-weight: 600;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            border: 1px solid var(--border);
         }
 
         .class-title {
-            font-size: 1.6rem;
+            font-size: 1.35rem;
             margin: 0;
         }
 
-        /* Info grid */
+        @media (min-width: 640px) {
+            .class-title { font-size: 1.6rem; }
+        }
+
+        /* ── Info Grid ── */
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-bottom: 0;
+            gap: 10px;
         }
 
         .info-card {
-            background: #f0e8db;
-            border-radius: 12px;
-            padding: 16px;
+            border-radius: var(--radius-md) !important;
+            padding: 14px !important;
         }
 
         .info-label {
-            font-size: 0.78rem;
-            color: #7a6d5c;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-            margin: 0 0 6px;
+            letter-spacing: 0.06em;
+            font-weight: 700;
+            margin: 0 0 4px;
         }
 
         .info-value {
             font-size: 1.1rem;
-            font-weight: 600;
+            font-weight: 700;
         }
 
-        .info-value.accent { color: var(--accent); }
-        .info-value.muted { color: #7a6d5c; font-style: italic; font-weight: normal; }
-
-        /* Section label */
+        /* ── Teacher Card ── */
         .section-label {
-            font-size: 0.82rem;
-            color: #7a6d5c;
+            font-size: 0.8rem;
+            color: var(--muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.06em;
             margin: 0 0 12px;
-            font-weight: 600;
+            font-weight: 700;
         }
 
-        /* Teacher card */
         .teacher-card {
             display: flex;
             align-items: center;
-            gap: 14px;
-            background: #edf7f4;
-            border: 1px solid var(--accent);
-            border-radius: 14px;
-            padding: 16px 20px;
+            gap: 12px;
+            border-radius: var(--radius-md) !important;
+            padding: 14px 16px !important;
         }
 
         .teacher-avatar {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: var(--accent);
-            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 1.1rem;
+            font-weight: 700;
+            font-size: 1rem;
             flex-shrink: 0;
         }
 
         .teacher-info .name {
-            font-weight: 600;
-            font-size: 1rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-strong);
         }
 
         .teacher-info .username {
-            color: #5b5146;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
         }
 
         .no-teacher {
-            color: #7a6d5c;
-            font-style: italic;
             padding: 10px 0;
+            font-style: italic;
         }
 
-        /* Student table */
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        /* ── Student List ── */
+        .student-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        th, td {
-            text-align: left;
-            padding: 11px 14px;
-            border-bottom: 1px solid #eee3d3;
+        .student-header .section-label { margin: 0; }
+
+        .student-header .btn {
+            min-height: 40px;
+            font-size: 0.82rem;
         }
 
-        th {
-            background: #f0e8db;
-            font-weight: bold;
-            font-size: 0.9rem;
+        @media (max-width: 479px) {
+            .student-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .student-header .btn {
+                width: 100%;
+                text-align: center;
+            }
         }
 
-        tr:last-child td { border-bottom: 0; }
+        /* Student cards on mobile, table on desktop */
+        .student-list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .student-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
+
+        .student-row .num {
+            color: var(--muted);
+            font-size: 0.82rem;
+            font-weight: 600;
+            min-width: 24px;
+        }
 
         .student-avatar {
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: #b8860b;
-            color: #fff;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 0.8rem;
+            font-weight: 700;
+            font-size: 0.78rem;
             flex-shrink: 0;
-            vertical-align: middle;
-            margin-right: 10px;
+        }
+
+        .student-row .student-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .student-row .student-name {
+            font-weight: 600;
+            color: var(--text-strong);
+            font-size: 0.92rem;
+        }
+
+        .student-row .student-uname {
+            color: var(--muted);
+            font-size: 0.8rem;
         }
 
         .empty {
             text-align: center;
             padding: 24px;
-            color: #7a6d5c;
+            color: var(--muted);
             font-style: italic;
         }
-
-        .btn {
-            border: 0;
-            border-radius: 999px;
-            padding: 8px 16px;
-            font: inherit;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: #fff;
-            background: var(--accent);
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn:hover { background: var(--accent-dark); }
     </style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
+    <div class="gradient-orb gradient-orb-1"></div>
+    <div class="gradient-orb gradient-orb-2"></div>
+
     <div class="topbar">
         <div class="topbar-left">
-            <a href="/admin">&larr; Back to Dashboard</a>
+            <a href="/admin">&larr; Dashboard</a>
             <h1>Class Details</h1>
         </div>
         <div class="topbar-right">
@@ -272,13 +209,15 @@
     </div>
 
     <main>
+        <!-- Class name -->
         <div class="card">
             <div class="class-header">
-                <span class="class-code">{{ cls.code }}</span>
+                <span class="class-code-badge">{{ cls.code }}</span>
                 <h2 class="class-title">{{ cls.name }}</h2>
             </div>
         </div>
 
+        <!-- Info grid -->
         <div class="card">
             <div class="info-grid">
                 <div class="info-card">
@@ -294,6 +233,7 @@
             </div>
         </div>
 
+        <!-- Teacher -->
         <div class="card">
             <p class="section-label">Teacher</p>
             {% if teacher %}
@@ -309,34 +249,26 @@
             {% endif %}
         </div>
 
+        <!-- Students -->
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                <p class="section-label" style="margin:0;">Students ({{ enrolled|length }})</p>
-                <a href="/admin/enroll?class_id={{ cls._id }}" class="btn">Manage Enrollment</a>
+            <div class="student-header">
+                <p class="section-label">Students ({{ enrolled|length }})</p>
+                <a href="/admin/enroll?class_id={{ cls._id }}" class="btn">📋 Manage Enrollment</a>
             </div>
 
             {% if enrolled %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Student</th>
-                        <th>Username</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for s in enrolled %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>
-                            <span class="student-avatar">{{ s.full_name[0]|upper }}</span>
-                            {{ s.full_name }}
-                        </td>
-                        <td>@{{ s.username }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="student-list-view">
+                {% for s in enrolled %}
+                <div class="student-row">
+                    <span class="num">{{ loop.index }}</span>
+                    <span class="student-avatar">{{ s.full_name[0]|upper }}</span>
+                    <div class="student-details">
+                        <div class="student-name">{{ s.full_name }}</div>
+                        <div class="student-uname">@{{ s.username }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
             {% else %}
             <p class="empty">No students enrolled yet. Click "Manage Enrollment" to add students.</p>
             {% endif %}

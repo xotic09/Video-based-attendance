@@ -2,266 +2,192 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Users - Attendance System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Manage Users — Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <style>
-        :root {
-            --bg: #f4f1ea;
-            --panel: #fffaf2;
-            --border: #d8cdbd;
-            --text: #2b241c;
-            --accent: #1f6f5f;
-            --accent-dark: #174f44;
-            --danger: #9b2c2c;
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Georgia, "Times New Roman", serif;
-            color: var(--text);
-            background: linear-gradient(160deg, #f2ece3, #fbf8f3);
-            padding: 0;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 28px;
-            background: var(--panel);
-            border-bottom: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(60, 44, 20, 0.06);
-        }
-
-        .topbar-left {
+        .section-title {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 10px;
+            margin: 0 0 6px;
+            font-size: 1.2rem;
         }
 
-        .topbar-left a {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
+        .section-desc {
+            color: var(--muted);
+            margin: 0 0 18px;
+            font-size: 0.88rem;
         }
 
-        .topbar-left a:hover { text-decoration: underline; }
-
-        .topbar h1 { margin: 0; font-size: 1.3rem; }
-
-        .topbar-right {
+        /* ── Create Form ── */
+        .create-form {
             display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 0.9rem;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        .role-badge {
-            background: var(--accent);
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.8rem;
+        .create-form label {
+            display: grid;
+            gap: 5px;
             font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--muted-strong);
         }
 
-        .logout-link {
-            color: var(--danger);
-            text-decoration: none;
-            font-weight: 600;
+        @media (min-width: 640px) {
+            .create-form {
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: flex-end;
+            }
+            .create-form label { flex: 1; min-width: 140px; }
         }
 
-        .logout-link:hover { text-decoration: underline; }
+        /* ── Error & Cred ── */
+        .error-banner { margin-bottom: 16px; }
 
-        main {
-            max-width: 900px;
-            margin: 28px auto;
-            padding: 0 24px;
-        }
-
-        h2 { margin: 0 0 16px; }
-
-        .card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 22px;
-            box-shadow: 0 12px 30px rgba(60, 44, 20, 0.08);
-            margin-bottom: 24px;
-        }
-
-        /* Credential banner */
         .cred-banner {
-            border-radius: 14px;
-            padding: 20px 24px;
-            margin-bottom: 24px;
-            border: 2px solid var(--accent);
-            background: #edf7f4;
+            border-radius: var(--radius-lg) !important;
+            padding: 18px !important;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.06), rgba(59, 130, 246, 0.04)) !important;
+            border: 1px solid var(--purple-200) !important;
         }
 
         .cred-banner h3 {
-            margin: 0 0 12px;
-            color: var(--accent);
+            margin: 0 0 10px;
+            color: var(--purple-700);
+            font-size: 1rem;
         }
 
         .cred-grid {
             display: grid;
             grid-template-columns: auto 1fr;
-            gap: 6px 16px;
-            font-size: 0.95rem;
+            gap: 6px 14px;
+            font-size: 0.9rem;
         }
 
         .cred-grid dt {
             font-weight: 600;
-            color: #5b5146;
+            color: var(--muted);
         }
 
         .cred-grid dd { margin: 0; }
 
-        .password-value {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--danger);
-            background: #fff;
-            padding: 2px 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            display: inline-block;
-            user-select: all;
-        }
-
         .cred-warning {
-            margin: 12px 0 0;
-            font-size: 0.85rem;
+            margin: 10px 0 0;
+            font-size: 0.82rem;
             color: var(--danger);
             font-weight: 600;
         }
 
-        /* Error banner */
-        .error-banner {
-            background: #fef2f2;
-            border: 1px solid #fca5a5;
-            color: var(--danger);
-            padding: 12px 18px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        /* Create user form */
-        .create-form {
+        /* ══ User Cards — Premium ══ */
+        .user-group-label {
             display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 12px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, var(--purple-100), var(--purple-50));
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--purple-900);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            width: fit-content;
         }
 
-        .create-form label {
+        .user-list {
             display: grid;
-            gap: 4px;
-            font-weight: 600;
-            font-size: 0.88rem;
+            grid-template-columns: 1fr;
+            gap: 12px;
         }
 
-        .create-form input, .create-form select {
-            padding: 10px 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            font: inherit;
-            font-size: 0.9rem;
-            background: #fff;
+        @media (min-width: 640px) {
+            .user-list { grid-template-columns: repeat(2, 1fr); }
         }
 
-        .create-form input:focus, .create-form select:focus {
-            outline: 2px solid var(--accent);
-            border-color: var(--accent);
-        }
-
-        button, .btn {
-            border: 0;
-            border-radius: 999px;
-            padding: 10px 18px;
-            font: inherit;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: #fff;
-            background: var(--accent);
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        button:hover, .btn:hover { background: var(--accent-dark); }
-
-        .btn-danger { background: var(--danger); }
-        .btn-danger:hover { background: #7f1d1d; }
-
-        .btn-secondary { background: #4a6fa5; }
-        .btn-secondary:hover { background: #3b5a8a; }
-
-        /* Tables */
-        table { width: 100%; border-collapse: collapse; }
-
-        th, td {
-            text-align: left;
-            padding: 10px 14px;
-            border-bottom: 1px solid #eee3d3;
-        }
-
-        th {
-            background: #f0e8db;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-
-        tr:last-child td { border-bottom: 0; }
-
-        .actions-cell {
+        .user-card {
+            background: #fff !important;
+            border: 1px solid rgba(139, 92, 246, 0.15) !important;
+            border-radius: var(--radius-lg) !important;
+            padding: 18px !important;
             display: flex;
-            gap: 6px;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.08) !important;
+            transition: transform 200ms var(--ease), box-shadow 200ms var(--ease);
         }
 
-        .actions-cell form { margin: 0; }
+        .user-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15) !important;
+        }
+
+        .user-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple-400), var(--purple-600));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .user-info { flex: 1; min-width: 0; }
+
+        .user-name {
+            font-weight: 800;
+            color: var(--text-strong);
+            font-size: 1.15rem;
+            margin-bottom: 2px;
+        }
+
+        .user-username {
+            color: var(--muted-strong);
+            font-size: 0.92rem;
+            font-weight: 500;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .user-actions form { margin: 0; flex: 1; }
+
+        .user-actions button {
+            width: 100%;
+            min-height: 36px;
+            font-size: 0.78rem;
+            padding: 0 12px;
+            border-radius: var(--radius-full);
+        }
 
         .empty {
             text-align: center;
             padding: 24px;
-            color: #7a6d5c;
+            color: var(--muted);
         }
 
-        .section-label {
-            font-size: 0.8rem;
-            color: #7a6d5c;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 0 0 10px;
-            font-weight: 600;
-        }
-
-        .username-link {
-            color: var(--accent);
-            cursor: pointer;
-            text-decoration: underline;
-            font-weight: bold;
-            background: none;
-            border: none;
-            font: inherit;
-            padding: 0;
-        }
-
-        .username-link:hover { color: var(--accent-dark); }
-
-        /* Modal overlay */
+        /* ── Modal ── */
         .overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.5);
             z-index: 100;
             justify-content: center;
             align-items: center;
@@ -270,40 +196,45 @@
         .overlay.active { display: flex; }
 
         .modal {
-            background: var(--panel);
-            border-radius: 18px;
-            padding: 28px;
-            max-width: 440px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 24px !important;
+            max-width: 420px;
+            width: calc(100% - 32px);
         }
 
         .modal h3 {
-            margin: 0 0 16px;
-            font-size: 1.15rem;
+            margin: 0 0 14px;
+            font-size: 1.1rem;
         }
 
-        .modal .cred-grid {
-            margin-bottom: 18px;
-        }
+        .modal .cred-grid { margin-bottom: 14px; }
 
         .modal-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 18px;
+            gap: 8px;
+            margin-top: 16px;
         }
 
-        .close-btn {
-            background: #7a6d5c;
+        .modal-actions button { flex: 1; }
+
+        .password-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.05rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            user-select: all;
         }
     </style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
+    <div class="gradient-orb gradient-orb-1"></div>
+    <div class="gradient-orb gradient-orb-2"></div>
+
     <div class="topbar">
         <div class="topbar-left">
-            <a href="/admin">&larr; Back to Dashboard</a>
-            <h1>Manage Users</h1>
+            <a href="/admin">&larr; Dashboard</a>
+            <h1>Users</h1>
         </div>
         <div class="topbar-right">
             <span class="role-badge">ADMIN</span>
@@ -314,12 +245,13 @@
 
     <main>
         {% if error %}
-        <div class="error-banner">{{ error }}</div>
+        <div class="error-banner error">{{ error }}</div>
         {% endif %}
 
-        <div class="card">
-            <h2>Create New User</h2>
-            <p style="color:var(--muted); margin:0 0 14px; font-size:0.9rem;">A password will be auto-generated. Share credentials with the user after creation.</p>
+        <!-- Create User -->
+        <section class="card" style="padding: 20px !important;">
+            <h2 class="section-title">➕ Create New User</h2>
+            <p class="section-desc">A password will be auto-generated. Share credentials with the user after creation.</p>
             <form class="create-form" method="post" action="/admin/create-user">
                 <label>
                     Full Name
@@ -338,89 +270,79 @@
                 </label>
                 <button type="submit">Create User</button>
             </form>
-        </div>
+        </section>
 
-        <div class="card">
-            <p class="section-label">Teachers ({{ teachers|length }})</p>
+        <!-- Teachers -->
+        <section class="card" style="padding: 20px !important;">
+            <span class="user-group-label">👨‍🏫 Teachers · {{ teachers|length }}</span>
             {% if teachers %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Full Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for t in teachers %}
-                    <tr>
-                        <td>
-                            <button class="username-link" data-username="{{ t.username }}" onclick="showCreds('{{ t.username }}', '{{ t.full_name }}', 'Teacher', '{{ t.raw_password | default('N/A', true) }}')">
-                                {{ t.username }}
-                            </button>
-                        </td>
-                        <td>{{ t.full_name }}</td>
-                        <td>
-                            <div class="actions-cell">
-                                <form method="post" action="/admin/reset-password">
-                                    <input type="hidden" name="username" value="{{ t.username }}">
-                                    <button type="submit" class="btn-secondary">Reset Password</button>
-                                </form>
-                                <form method="post" action="/admin/delete-user" onsubmit="return confirm('Delete user {{ t.username }}?')">
-                                    <input type="hidden" name="username" value="{{ t.username }}">
-                                    <button type="submit" class="btn-danger">Delete</button>
-                                </form>
+            <div class="user-list">
+                {% for t in teachers %}
+                <div class="user-card">
+                    <div class="user-card-header">
+                        <div class="user-avatar">{{ t.full_name[0]|upper }}</div>
+                        <div class="user-info">
+                            <div class="user-name">
+                                <button class="username-link" data-username="{{ t.username }}" onclick="showCreds('{{ t.username }}', '{{ t.full_name }}', 'Teacher', '{{ t.raw_password | default('N/A', true) }}')">
+                                    {{ t.full_name }}
+                                </button>
                             </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            <div class="user-username">@{{ t.username }}</div>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <form method="post" action="/admin/reset-password">
+                            <input type="hidden" name="username" value="{{ t.username }}">
+                            <button type="submit" class="btn-secondary">Reset PW</button>
+                        </form>
+                        <form method="post" action="/admin/delete-user" onsubmit="return confirm('Delete user {{ t.username }}?')">
+                            <input type="hidden" name="username" value="{{ t.username }}">
+                            <button type="submit" class="btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
             {% else %}
             <p class="empty">No teachers yet.</p>
             {% endif %}
-        </div>
+        </section>
 
-        <div class="card">
-            <p class="section-label">Students ({{ students|length }})</p>
+        <!-- Students -->
+        <section class="card" style="padding: 20px !important;">
+            <span class="user-group-label">🎓 Students · {{ students|length }}</span>
             {% if students %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Full Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for s in students %}
-                    <tr>
-                        <td>
-                            <button class="username-link" data-username="{{ s.username }}" onclick="showCreds('{{ s.username }}', '{{ s.full_name }}', 'Student', '{{ s.raw_password | default('N/A', true) }}')">
-                                {{ s.username }}
-                            </button>
-                        </td>
-                        <td>{{ s.full_name }}</td>
-                        <td>
-                            <div class="actions-cell">
-                                <form method="post" action="/admin/reset-password">
-                                    <input type="hidden" name="username" value="{{ s.username }}">
-                                    <button type="submit" class="btn-secondary">Reset Password</button>
-                                </form>
-                                <form method="post" action="/admin/delete-user" onsubmit="return confirm('Delete user {{ s.username }}?')">
-                                    <input type="hidden" name="username" value="{{ s.username }}">
-                                    <button type="submit" class="btn-danger">Delete</button>
-                                </form>
+            <div class="user-list">
+                {% for s in students %}
+                <div class="user-card">
+                    <div class="user-card-header">
+                        <div class="user-avatar">{{ s.full_name[0]|upper }}</div>
+                        <div class="user-info">
+                            <div class="user-name">
+                                <button class="username-link" data-username="{{ s.username }}" onclick="showCreds('{{ s.username }}', '{{ s.full_name }}', 'Student', '{{ s.raw_password | default('N/A', true) }}')">
+                                    {{ s.full_name }}
+                                </button>
                             </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            <div class="user-username">@{{ s.username }}</div>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <form method="post" action="/admin/reset-password">
+                            <input type="hidden" name="username" value="{{ s.username }}">
+                            <button type="submit" class="btn-secondary">Reset PW</button>
+                        </form>
+                        <form method="post" action="/admin/delete-user" onsubmit="return confirm('Delete user {{ s.username }}?')">
+                            <input type="hidden" name="username" value="{{ s.username }}">
+                            <button type="submit" class="btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
             {% else %}
             <p class="empty">No students yet.</p>
             {% endif %}
-        </div>
+        </section>
     </main>
 
     <!-- Credentials Modal -->

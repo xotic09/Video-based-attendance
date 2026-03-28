@@ -8,4 +8,4 @@ facenet
 mtcnn
 pymongo
 PyJWT
-
+cryptography

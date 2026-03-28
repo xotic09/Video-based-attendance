@@ -2,257 +2,333 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Attendance Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <style>
-        body {
+        .page-title {
+            margin: 0 0 18px;
+            font-size: 1.4rem;
+        }
+
+        @media (min-width: 640px) {
+            .page-title { font-size: 1.8rem; }
+        }
+
+        .summary-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+            scroll-snap-type: x mandatory;
+        }
+
+        .stat-card {
+            flex: 0 0 auto;
+            min-width: 106px;
+            background: rgba(255, 255, 255, 0.82) !important;
+            border: 1px solid rgba(139, 92, 246, 0.1) !important;
+            border-radius: var(--radius-lg) !important;
+            padding: 16px;
+            text-align: center;
+            scroll-snap-align: start;
+            box-shadow: var(--shadow-sm) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-card h2 {
+            margin: 0 0 4px;
+            font-size: 0.78rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+        }
+
+        .stat-card p {
             margin: 0;
-            min-height: 100vh;
-            font-family: Georgia, "Times New Roman", serif;
-            background: linear-gradient(160deg, #f2ece3, #fbf8f3);
-            color: #2b241c;
-            padding: 0;
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--purple-600), var(--purple-400));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .topbar {
+        @media (min-width: 640px) {
+            .summary-row {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                overflow-x: visible;
+            }
+
+            .stat-card { min-width: 0; }
+        }
+
+        .result-columns {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 28px;
-            background: #fffaf2;
-            border-bottom: 1px solid #d8cdbd;
-            box-shadow: 0 2px 8px rgba(60, 44, 20, 0.06);
-        }
-
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .topbar-left a {
-            color: #1f6f5f;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .topbar-left a:hover { text-decoration: underline; }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 16px;
-            font-size: 0.9rem;
+            margin-bottom: 20px;
         }
 
-        .logout-link {
-            color: #9b2c2c;
-            text-decoration: none;
-            font-weight: 600;
+        @media (min-width: 768px) {
+            .result-columns {
+                flex-direction: row;
+            }
+
+            .result-columns > section {
+                flex: 1;
+            }
         }
 
-        main {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 24px;
+        .result-columns section {
+            padding: 16px !important;
+            background: rgba(255, 255, 255, 0.78) !important;
         }
 
-        h1, h2 {
-            margin-top: 0;
+        .result-columns section h2 {
+            margin: 0 0 12px;
+            font-size: 1.05rem;
         }
 
-        .summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 14px;
-            margin-bottom: 24px;
-        }
-
-        .card, section {
-            background: #fffaf2;
-            border: 1px solid #ddd1be;
-            border-radius: 18px;
-            padding: 18px;
-            box-shadow: 0 12px 30px rgba(60, 44, 20, 0.08);
-        }
-
-        .columns {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 18px;
-        }
-
-        ul {
+        .result-columns ul {
             list-style: none;
             padding: 0;
             margin: 0;
-        }
-
-        li {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee3d3;
-        }
-
-        li:last-child {
-            border-bottom: 0;
-        }
-
-        .present {
-            color: #1f6f5f;
-        }
-
-        .absent {
-            color: #9b2c2c;
-        }
-
-        .actions {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .result-item,
+        .absent-item {
+            padding: 12px 14px;
+            font-size: 0.94rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            box-shadow: 0 8px 18px rgba(139, 92, 246, 0.08);
+        }
+
+        .result-item {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .absent-item {
+            display: flex;
+            align-items: center;
             gap: 12px;
-            margin-top: 22px;
         }
 
-        .action-form {
+        .absent-check {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
             margin: 0;
-        }
-
-        a, button {
-            display: inline-block;
-            text-decoration: none;
-            padding: 12px 18px;
+            flex-shrink: 0;
             border-radius: 999px;
-            border: 0;
-            font: inherit;
+            border: 2px solid var(--purple-400);
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.14);
             cursor: pointer;
-            color: #fff;
-            background: #1f6f5f;
+            transition:
+                transform 160ms var(--ease),
+                box-shadow 160ms var(--ease),
+                border-color 160ms var(--ease),
+                background 160ms var(--ease);
         }
 
-        .download {
-            background: #7a6d5c;
+        .absent-check:hover {
+            transform: scale(1.04);
+            border-color: var(--purple-600);
         }
 
-        .percentage-btn {
-            background: #4a6fa5;
+        .absent-check:checked {
+            border-color: var(--purple-700);
+            background:
+                radial-gradient(circle at center, #ffffff 0 24%, transparent 26%),
+                linear-gradient(135deg, var(--purple-600), var(--purple-800));
+            box-shadow: 0 8px 18px rgba(124, 58, 237, 0.24);
+        }
+
+        .absent-label {
+            flex: 1;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .mark-present-btn {
+            margin-top: 14px;
+            width: 100%;
+            min-height: 52px;
+            padding: 0 18px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9 55%, #5b21b6) !important;
+            box-shadow: 0 16px 28px rgba(109, 40, 217, 0.28) !important;
+        }
+
+        @media (min-width: 480px) {
+            .mark-present-btn { width: auto; }
+        }
+
+        .moved-msg {
+            color: var(--success);
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+        .actions-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .actions-bar form {
+            margin: 0;
+            width: 100%;
+        }
+
+        .actions-bar button,
+        .actions-bar a {
+            width: 100%;
+            min-height: 54px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 18px;
+            text-decoration: none;
+        }
+
+        .results-download {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(243, 232, 255, 0.98)) !important;
+            color: var(--purple-700) !important;
+            border: 1px solid rgba(139, 92, 246, 0.18) !important;
+            box-shadow: 0 10px 22px rgba(139, 92, 246, 0.1) !important;
+        }
+
+        .results-percentage {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed 55%, #5b21b6) !important;
+            box-shadow: 0 16px 28px rgba(124, 58, 237, 0.26) !important;
+        }
+
+        .results-back {
+            background: transparent !important;
+            color: var(--muted-strong) !important;
+            border: 1px solid rgba(139, 92, 246, 0.16) !important;
+            box-shadow: none !important;
+            text-decoration: underline;
+        }
+
+        @media (min-width: 640px) {
+            .actions-bar {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .actions-bar form {
+                width: auto;
+            }
+
+            .actions-bar button,
+            .actions-bar a {
+                width: auto;
+                flex: none;
+            }
         }
 
         .overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.5);
             z-index: 100;
             justify-content: center;
             align-items: center;
+            background: rgba(15, 10, 26, 0.18);
         }
 
-        .overlay.active {
-            display: flex;
-        }
+        .overlay.active { display: flex; }
 
         .modal {
-            background: #fffaf2;
-            border-radius: 18px;
-            padding: 28px;
+            padding: 20px !important;
             max-width: 700px;
-            width: 90%;
-            max-height: 80vh;
+            width: calc(100% - 32px);
+            max-height: calc(100vh - 48px);
+            max-height: calc(100dvh - 48px);
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
         .modal h2 {
-            margin-bottom: 16px;
+            margin: 0 0 16px;
+            font-size: 1.1rem;
         }
 
-        .modal table {
+        .modal-table {
             width: 100%;
             border-collapse: collapse;
+            font-size: 0.85rem;
         }
 
-        .modal th, .modal td {
-            text-align: left;
-            padding: 10px 12px;
-            border-bottom: 1px solid #eee3d3;
+        .modal-table th,
+        .modal-table td {
+            padding: 8px 10px;
         }
 
-        .modal th {
-            background: #f0e8db;
-            font-weight: bold;
-        }
-
-        .bar-cell {
-            width: 35%;
-        }
+        .bar-cell { width: 30%; }
 
         .bar-bg {
-            background: #eee3d3;
-            border-radius: 8px;
-            height: 22px;
+            height: 20px;
+            border-radius: var(--radius-sm);
             overflow: hidden;
+            background: rgba(139, 92, 246, 0.08);
         }
 
         .bar-fill {
             height: 100%;
-            border-radius: 8px;
-            transition: width 0.5s ease;
+            border-radius: var(--radius-sm);
+            transition: width 0.5s var(--ease);
         }
 
-        .bar-fill.high { background: #1f6f5f; }
-        .bar-fill.mid  { background: #b8860b; }
-        .bar-fill.low  { background: #9b2c2c; }
-
         .close-btn {
-            background: #9b2c2c;
-            margin-top: 18px;
+            margin-top: 16px;
+            width: 100%;
+        }
+
+        @media (min-width: 640px) {
+            .close-btn { width: auto; }
         }
 
         .loading {
             text-align: center;
             padding: 30px;
-            color: #7a6d5c;
+            color: var(--muted);
         }
 
-        .absent-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .absent-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #1f6f5f;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .mark-present-btn {
-            background: #b8860b;
-            margin-top: 14px;
-            font-size: 0.9em;
-            padding: 10px 16px;
-        }
-
-        .mark-present-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .moved-msg {
-            color: #1f6f5f;
-            font-size: 0.9em;
-            margin-top: 8px;
+        @media (max-width: 639px) {
+            .modal-table .hide-mobile { display: none; }
         }
     </style>
-    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
+    <div class="gradient-orb gradient-orb-1"></div>
+    <div class="gradient-orb gradient-orb-2"></div>
+
     {% if user %}
     <div class="topbar">
         <div class="topbar-left">
-            <a href="/teacher">&larr; Back to Dashboard</a>
+            <a href="/teacher">&larr; Dashboard</a>
         </div>
         <div class="topbar-right">
             <span>{{ user.username }}</span>
@@ -262,38 +338,34 @@
     {% endif %}
 
     <main>
-        <h1>Attendance Results</h1>
+        <h1 class="page-title">Attendance Results</h1>
 
-        <div class="summary">
-            <div class="card">
+        <div class="summary-row">
+            <div class="stat-card">
                 <h2>Present</h2>
                 <p>{{ detected_names|length }}</p>
             </div>
-            <div class="card">
+            <div class="stat-card">
                 <h2>Absent</h2>
                 <p>{{ absentees|length }}</p>
             </div>
-            <div class="card">
-                <h2>Sampled Frames</h2>
-                <p>{{ processed_frames }}</p>
-            </div>
-            <div class="card">
+            <div class="stat-card">
                 <h2>Total Frames</h2>
                 <p>{{ total_frames }}</p>
             </div>
         </div>
 
-        <div class="columns">
+        <div class="result-columns">
             <section>
                 <h2>Present Students</h2>
                 {% if detected_names %}
                     <ul id="presentList">
                         {% for name in detected_names %}
-                            <li class="present">{{ name }}</li>
+                            <li class="result-item present">{{ name }}</li>
                         {% endfor %}
                     </ul>
                 {% else %}
-                    <p>No student met the minimum detection threshold.</p>
+                    <p style="color:var(--muted)">No student met the minimum detection threshold.</p>
                 {% endif %}
             </section>
 
@@ -303,32 +375,32 @@
                     <ul id="absentList">
                         {% for name in absentees %}
                             <li class="absent absent-item">
-                                <input type="checkbox" value="{{ name }}" class="absent-check">
-                                <span>{{ name }}</span>
+                                <input type="checkbox" value="{{ name }}" class="absent-check" id="absent-{{ loop.index0 }}">
+                                <label for="absent-{{ loop.index0 }}" class="absent-label">{{ name }}</label>
                             </li>
                         {% endfor %}
                     </ul>
-                    <button class="mark-present-btn" id="markPresentBtn" onclick="markAsPresent()">Mark as Present</button>
+                    <button class="mark-present-btn" id="markPresentBtn" onclick="markAsPresent()">Mark Selected as Present</button>
                     <div id="markMsg"></div>
                 {% else %}
-                    <p>All registered students were marked present.</p>
+                    <p style="color:var(--muted)">All registered students were marked present.</p>
                 {% endif %}
             </section>
         </div>
 
-        <div class="actions">
-            <form class="action-form" action="/download_attendance" method="post">
+        <div class="actions-bar">
+            <form action="/download_attendance" method="post">
                 <input type="hidden" name="subject" value="{{ subject }}">
                 <input type="hidden" name="attendance_rows" value="{{ attendance_rows|tojson|forceescape }}">
-                <button type="submit" class="download">Download Excel Sheet</button>
+                <button type="submit" class="download results-download">Download Excel</button>
             </form>
 
-            <button class="percentage-btn" onclick="showPercentage()">View Attendance Percentage</button>
+            <button class="percentage-btn results-percentage" onclick="showPercentage()">View Percentage</button>
 
             {% if user %}
-                <a href="/teacher">Back to Dashboard</a>
+                <a href="/teacher" class="results-back">Back to Dashboard</a>
             {% else %}
-                <a href="/">Record Another Video</a>
+                <a href="/" class="results-back">Record Another</a>
             {% endif %}
         </div>
 
@@ -348,123 +420,121 @@
         const classId = {{ class_id|tojson }};
 
         function markAsPresent() {
-            const checked = document.querySelectorAll('.absent-check:checked');
-            if (checked.length === 0) return;
+            const checked = document.querySelectorAll(".absent-check:checked");
+            if (checked.length === 0) {
+                return;
+            }
 
-            const names = Array.from(checked).map(cb => cb.value);
-            const btn = document.getElementById('markPresentBtn');
+            const names = Array.from(checked).map((cb) => cb.value);
+            const btn = document.getElementById("markPresentBtn");
             btn.disabled = true;
-            btn.textContent = 'Updating...';
+            btn.textContent = "Updating...";
 
-            fetch('/mark_present', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({names: names, subject: subject})
+            fetch("/mark_present", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ names: names, subject: subject })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    const presentList = document.querySelector('#presentList') ||
-                        (() => {
-                            const section = document.querySelector('.columns section:first-child');
-                            let ul = section.querySelector('ul');
-                            if (!ul) {
-                                const p = section.querySelector('p');
-                                if (p) p.remove();
-                                ul = document.createElement('ul');
-                                ul.id = 'presentList';
-                                section.appendChild(ul);
-                            } else {
-                                ul.id = 'presentList';
-                            }
-                            return ul;
-                        })();
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.success) {
+                        const presentList = document.querySelector("#presentList") ||
+                            (() => {
+                                const section = document.querySelector(".result-columns section:first-child");
+                                let ul = section.querySelector("ul");
+                                if (!ul) {
+                                    const p = section.querySelector("p");
+                                    if (p) {
+                                        p.remove();
+                                    }
+                                    ul = document.createElement("ul");
+                                    ul.id = "presentList";
+                                    section.appendChild(ul);
+                                } else {
+                                    ul.id = "presentList";
+                                }
+                                return ul;
+                            })();
 
-                    checked.forEach(cb => {
-                        const li = cb.closest('li');
-                        const name = cb.value;
+                        checked.forEach((cb) => {
+                            const li = cb.closest("li");
+                            const name = cb.value;
+                            const newLi = document.createElement("li");
+                            newLi.className = "result-item present";
+                            newLi.textContent = name;
+                            presentList.appendChild(newLi);
+                            li.remove();
+                        });
 
-                        // Move to present list
-                        const newLi = document.createElement('li');
-                        newLi.className = 'present';
-                        newLi.textContent = name;
-                        presentList.appendChild(newLi);
+                        const presentCount = document.querySelector(".summary-row .stat-card:nth-child(1) p");
+                        const absentCount = document.querySelector(".summary-row .stat-card:nth-child(2) p");
+                        presentCount.textContent = parseInt(presentCount.textContent, 10) + names.length;
+                        absentCount.textContent = parseInt(absentCount.textContent, 10) - names.length;
 
-                        // Remove from absent list
-                        li.remove();
-                    });
+                        document.getElementById("markMsg").innerHTML =
+                            '<p class="moved-msg">' + names.length + " student(s) marked as present.</p>";
 
-                    // Update counts
-                    const presentCount = document.querySelector('.summary .card:nth-child(1) p');
-                    const absentCount = document.querySelector('.summary .card:nth-child(2) p');
-                    presentCount.textContent = parseInt(presentCount.textContent) + names.length;
-                    absentCount.textContent = parseInt(absentCount.textContent) - names.length;
-
-                    document.getElementById('markMsg').innerHTML =
-                        '<p class="moved-msg">' + names.length + ' student(s) marked as present.</p>';
-
-                    // Hide button if no more absentees
-                    if (document.querySelectorAll('.absent-check').length === 0) {
-                        btn.style.display = 'none';
+                        if (document.querySelectorAll(".absent-check").length === 0) {
+                            btn.style.display = "none";
+                        }
                     }
-                }
-                btn.disabled = false;
-                btn.textContent = 'Mark as Present';
-            })
-            .catch(() => {
-                document.getElementById('markMsg').innerHTML =
-                    '<p style="color:#ff8b7b">Failed to update. Please try again.</p>';
-                btn.disabled = false;
-                btn.textContent = 'Mark as Present';
-            });
+
+                    btn.disabled = false;
+                    btn.textContent = "Mark Selected as Present";
+                })
+                .catch(() => {
+                    document.getElementById("markMsg").innerHTML =
+                        '<p style="color:var(--danger)">Failed to update. Please try again.</p>';
+                    btn.disabled = false;
+                    btn.textContent = "Mark Selected as Present";
+                });
         }
 
         function showPercentage() {
-            document.getElementById('percentageOverlay').classList.add('active');
-            document.getElementById('percentageContent').innerHTML = '<p class="loading">Loading...</p>';
+            document.getElementById("percentageOverlay").classList.add("active");
+            document.getElementById("percentageContent").innerHTML = '<p class="loading">Loading...</p>';
 
-            fetch('/attendance_percentage?subject=' + encodeURIComponent(subject) + '&class_id=' + encodeURIComponent(classId))
-                .then(res => res.json())
-                .then(data => {
+            fetch("/attendance_percentage?subject=" + encodeURIComponent(subject) + "&class_id=" + encodeURIComponent(classId))
+                .then((res) => res.json())
+                .then((data) => {
                     if (data.length === 0) {
-                        document.getElementById('percentageContent').innerHTML =
-                            '<p>No attendance records found in the database.</p>';
+                        document.getElementById("percentageContent").innerHTML =
+                            '<p style="color:var(--muted)">No attendance records found.</p>';
                         return;
                     }
 
-                    let html = '<table><thead><tr>' +
-                        '<th>Student</th><th>Subject</th><th>Present</th><th>Absent</th><th>Total</th>' +
-                        '<th class="bar-cell">Percentage</th></tr></thead><tbody>';
+                    let html = '<table class="modal-table"><thead><tr>' +
+                        "<th>Student</th><th class=\"hide-mobile\">Subject</th><th>Present</th><th class=\"hide-mobile\">Absent</th><th class=\"hide-mobile\">Total</th>" +
+                        '<th class="bar-cell">%</th></tr></thead><tbody>';
 
-                    data.forEach(s => {
-                        const level = s.percentage >= 75 ? 'high' : s.percentage >= 50 ? 'mid' : 'low';
-                        html += '<tr>' +
-                            '<td>' + s.name + '</td>' +
-                            '<td>' + s.subject + '</td>' +
-                            '<td>' + s.present + '</td>' +
-                            '<td>' + s.absent + '</td>' +
-                            '<td>' + s.total_classes + '</td>' +
-                            '<td class="bar-cell"><div class="bar-bg">' +
-                            '<div class="bar-fill ' + level + '" style="width:' + s.percentage + '%"></div>' +
-                            '</div><small>' + s.percentage + '%</small></td>' +
-                            '</tr>';
+                    data.forEach((s) => {
+                        const level = s.percentage >= 75 ? "high" : s.percentage >= 50 ? "mid" : "low";
+                        html += "<tr><td>" + s.name + "</td>" +
+                            '<td class="hide-mobile">' + s.subject + "</td>" +
+                            "<td>" + s.present + "</td>" +
+                            '<td class="hide-mobile">' + s.absent + "</td>" +
+                            '<td class="hide-mobile">' + s.total_classes + "</td>" +
+                            '<td class="bar-cell"><div class="bar-bg"><div class="bar-fill ' + level + '" style="width:' + s.percentage + '%"></div></div>' +
+                            '<small style="color:var(--muted-strong)">' + s.percentage + "%</small></td></tr>";
                     });
 
-                    html += '</tbody></table>';
-                    document.getElementById('percentageContent').innerHTML = html;
+                    html += "</tbody></table>";
+                    document.getElementById("percentageContent").innerHTML = html;
                 })
                 .catch(() => {
-                    document.getElementById('percentageContent').innerHTML =
-                        '<p style="color:#ff8b7b">Failed to load attendance data. Please try again.</p>';
+                    document.getElementById("percentageContent").innerHTML =
+                        '<p style="color:var(--danger)">Failed to load attendance data.</p>';
                 });
         }
 
         function closeModal() {
-            document.getElementById('percentageOverlay').classList.remove('active');
+            document.getElementById("percentageOverlay").classList.remove("active");
         }
 
-        document.getElementById('percentageOverlay').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
+        document.getElementById("percentageOverlay").addEventListener("click", function (e) {
+            if (e.target === this) {
+                closeModal();
+            }
         });
     </script>
 </body>
