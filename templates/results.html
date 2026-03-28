@@ -174,6 +174,38 @@
             padding: 30px;
             color: #7a6d5c;
         }
+
+        .absent-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .absent-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #1f6f5f;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .mark-present-btn {
+            background: #b8860b;
+            margin-top: 14px;
+            font-size: 0.9em;
+            padding: 10px 16px;
+        }
+
+        .mark-present-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .moved-msg {
+            color: #1f6f5f;
+            font-size: 0.9em;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -203,7 +235,7 @@
             <section>
                 <h2>Present Students</h2>
                 {% if detected_names %}
-                    <ul>
+                    <ul id="presentList">
                         {% for name in detected_names %}
                             <li class="present">{{ name }}</li>
                         {% endfor %}
@@ -213,14 +245,19 @@
                 {% endif %}
             </section>
 
-            <section>
+            <section id="absentSection">
                 <h2>Absent Students</h2>
                 {% if absentees %}
-                    <ul>
+                    <ul id="absentList">
                         {% for name in absentees %}
-                            <li class="absent">{{ name }}</li>
+                            <li class="absent absent-item">
+                                <input type="checkbox" value="{{ name }}" class="absent-check">
+                                <span>{{ name }}</span>
+                            </li>
                         {% endfor %}
                     </ul>
+                    <button class="mark-present-btn" id="markPresentBtn" onclick="markAsPresent()">Mark as Present</button>
+                    <div id="markMsg"></div>
                 {% else %}
                     <p>All registered students were marked present.</p>
                 {% endif %}
@@ -251,6 +288,80 @@
     </main>
 
     <script>
+        const subject = {{ subject|tojson }};
+
+        function markAsPresent() {
+            const checked = document.querySelectorAll('.absent-check:checked');
+            if (checked.length === 0) return;
+
+            const names = Array.from(checked).map(cb => cb.value);
+            const btn = document.getElementById('markPresentBtn');
+            btn.disabled = true;
+            btn.textContent = 'Updating...';
+
+            fetch('/mark_present', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({names: names, subject: subject})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const presentList = document.querySelector('#presentList') ||
+                        (() => {
+                            const section = document.querySelector('.columns section:first-child');
+                            let ul = section.querySelector('ul');
+                            if (!ul) {
+                                const p = section.querySelector('p');
+                                if (p) p.remove();
+                                ul = document.createElement('ul');
+                                ul.id = 'presentList';
+                                section.appendChild(ul);
+                            } else {
+                                ul.id = 'presentList';
+                            }
+                            return ul;
+                        })();
+
+                    checked.forEach(cb => {
+                        const li = cb.closest('li');
+                        const name = cb.value;
+
+                        // Move to present list
+                        const newLi = document.createElement('li');
+                        newLi.className = 'present';
+                        newLi.textContent = name;
+                        presentList.appendChild(newLi);
+
+                        // Remove from absent list
+                        li.remove();
+                    });
+
+                    // Update counts
+                    const presentCount = document.querySelector('.summary .card:nth-child(1) p');
+                    const absentCount = document.querySelector('.summary .card:nth-child(2) p');
+                    presentCount.textContent = parseInt(presentCount.textContent) + names.length;
+                    absentCount.textContent = parseInt(absentCount.textContent) - names.length;
+
+                    document.getElementById('markMsg').innerHTML =
+                        '<p class="moved-msg">' + names.length + ' student(s) marked as present.</p>';
+
+                    // Hide button if no more absentees
+                    if (document.querySelectorAll('.absent-check').length === 0) {
+                        btn.style.display = 'none';
+                    }
+                }
+                btn.disabled = false;
+                btn.textContent = 'Mark as Present';
+            })
+            .catch(() => {
+                document.getElementById('markMsg').innerHTML =
+                    '<p style="color:#9b2c2c">Failed to update. Please try again.</p>';
+                btn.disabled = false;
+                btn.textContent = 'Mark as Present';
+            });
+        }
+
         function showPercentage() {
             document.getElementById('percentageOverlay').classList.add('active');
             document.getElementById('percentageContent').innerHTML = '<p class="loading">Loading...</p>';
