@@ -1,10 +1,11 @@
 Flask
 opencv-python
 numpy
-tensorflow==1.15.0
+tensorflow
 scikit-learn
 Pillow
 facenet
 mtcnn
 pymongo
+PyJWT
 

@@ -27,9 +27,58 @@
             background:
                 radial-gradient(circle at top left, rgba(31, 111, 95, 0.12), transparent 30%),
                 linear-gradient(135deg, #efe7da, #f9f6ef 55%, #e8ddd0);
-            display: grid;
-            place-items: center;
-            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+        }
+
+        .topbar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 28px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(60, 44, 20, 0.06);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .topbar-left a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .topbar-left a:hover { text-decoration: underline; }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.9rem;
+        }
+
+        .class-badge {
+            background: #4a6fa5;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .logout-link {
+            color: var(--danger);
+            text-decoration: none;
+            font-weight: 600;
         }
 
         .shell {
@@ -39,6 +88,7 @@
             border-radius: 24px;
             padding: 28px;
             box-shadow: 0 24px 60px rgba(60, 44, 20, 0.14);
+            margin: 24px;
         }
 
         h1 {
@@ -127,6 +177,12 @@
             background: #fff;
         }
 
+        input[readonly] {
+            background: #f0e8db;
+            color: #5b5146;
+            cursor: not-allowed;
+        }
+
         .controls {
             display: flex;
             flex-wrap: wrap;
@@ -177,10 +233,26 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
+    {% if user %}
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="/teacher">&larr; Back to Dashboard</a>
+            {% if class_info %}
+                <span class="class-badge">{{ class_info.code }}</span>
+            {% endif %}
+        </div>
+        <div class="topbar-right">
+            <span>{{ user.username }}</span>
+            <a href="/logout" class="logout-link">Logout</a>
+        </div>
+    </div>
+    {% endif %}
+
     <main class="shell">
-        <h1>Recorded Attendance Capture</h1>
+        <h1>{% if class_info %}{{ class_info.code }} - {{ class_info.name }}{% else %}Recorded Attendance Capture{% endif %}</h1>
         <p>Record a short classroom video, then upload it for attendance processing. The backend samples frames every {{ frame_interval }} frames and marks a student present after at least {{ min_present_detections }} confident detections.</p>
         <p class="meta">Recommended recording: 10 seconds, slow camera movement, clear front-facing student visibility.</p>
 
@@ -198,14 +270,25 @@
             </section>
         </div>
 
-        <form id="recordingForm" action="{{ url_for('upload_recording') }}" method="post" enctype="multipart/form-data">
+        <form id="recordingForm" action="/upload_recording" method="post" enctype="multipart/form-data">
+            {% if class_info %}
+            <input type="hidden" name="class_id" value="{{ class_info._id }}">
+            {% endif %}
             <label>
                 Subject
-                <input type="text" name="subject" id="subject" required>
+                {% if class_info %}
+                    <input type="text" name="subject" id="subject" value="{{ class_info.code }} - {{ class_info.name }}" readonly required>
+                {% else %}
+                    <input type="text" name="subject" id="subject" required>
+                {% endif %}
             </label>
             <label>
                 Teacher
-                <input type="text" name="teacher" id="teacher" required>
+                {% if teacher_name %}
+                    <input type="text" name="teacher" id="teacher" value="{{ teacher_name }}" readonly required>
+                {% else %}
+                    <input type="text" name="teacher" id="teacher" required>
+                {% endif %}
             </label>
 
             <div class="controls">

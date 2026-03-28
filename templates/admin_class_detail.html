@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ cls.code }} - {{ cls.name }} - Attendance System</title>
+    <style>
+        :root {
+            --bg: #f4f1ea;
+            --panel: #fffaf2;
+            --border: #d8cdbd;
+            --text: #2b241c;
+            --accent: #1f6f5f;
+            --accent-dark: #174f44;
+            --danger: #9b2c2c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background: linear-gradient(160deg, #f2ece3, #fbf8f3);
+            padding: 0;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 28px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(60, 44, 20, 0.06);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .topbar-left a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .topbar-left a:hover { text-decoration: underline; }
+
+        .topbar h1 { margin: 0; font-size: 1.3rem; }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.9rem;
+        }
+
+        .role-badge {
+            background: var(--accent);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .logout-link {
+            color: var(--danger);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .logout-link:hover { text-decoration: underline; }
+
+        main {
+            max-width: 800px;
+            margin: 28px auto;
+            padding: 0 24px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 12px 30px rgba(60, 44, 20, 0.08);
+            margin-bottom: 24px;
+        }
+
+        h2 { margin: 0 0 16px; }
+
+        .class-header {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .class-code {
+            font-size: 0.85rem;
+            color: #7a6d5c;
+            background: #f0e8db;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+        }
+
+        .class-title {
+            font-size: 1.6rem;
+            margin: 0;
+        }
+
+        /* Info grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 0;
+        }
+
+        .info-card {
+            background: #f0e8db;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .info-label {
+            font-size: 0.78rem;
+            color: #7a6d5c;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin: 0 0 6px;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .info-value.accent { color: var(--accent); }
+        .info-value.muted { color: #7a6d5c; font-style: italic; font-weight: normal; }
+
+        /* Section label */
+        .section-label {
+            font-size: 0.82rem;
+            color: #7a6d5c;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 0 12px;
+            font-weight: 600;
+        }
+
+        /* Teacher card */
+        .teacher-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #edf7f4;
+            border: 1px solid var(--accent);
+            border-radius: 14px;
+            padding: 16px 20px;
+        }
+
+        .teacher-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .teacher-info .name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .teacher-info .username {
+            color: #5b5146;
+            font-size: 0.85rem;
+        }
+
+        .no-teacher {
+            color: #7a6d5c;
+            font-style: italic;
+            padding: 10px 0;
+        }
+
+        /* Student table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 11px 14px;
+            border-bottom: 1px solid #eee3d3;
+        }
+
+        th {
+            background: #f0e8db;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        tr:last-child td { border-bottom: 0; }
+
+        .student-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #b8860b;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 24px;
+            color: #7a6d5c;
+            font-style: italic;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 999px;
+            padding: 8px 16px;
+            font: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #fff;
+            background: var(--accent);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover { background: var(--accent-dark); }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="/admin">&larr; Back to Dashboard</a>
+            <h1>Class Details</h1>
+        </div>
+        <div class="topbar-right">
+            <span class="role-badge">ADMIN</span>
+            <span>{{ user.username }}</span>
+            <a href="/logout" class="logout-link">Logout</a>
+        </div>
+    </div>
+
+    <main>
+        <div class="card">
+            <div class="class-header">
+                <span class="class-code">{{ cls.code }}</span>
+                <h2 class="class-title">{{ cls.name }}</h2>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="info-grid">
+                <div class="info-card">
+                    <p class="info-label">Assigned Teacher</p>
+                    <p class="info-value {% if teacher %}accent{% else %}muted{% endif %}">
+                        {{ teacher.full_name if teacher else 'Not assigned' }}
+                    </p>
+                </div>
+                <div class="info-card">
+                    <p class="info-label">Enrolled Students</p>
+                    <p class="info-value accent">{{ enrolled|length }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <p class="section-label">Teacher</p>
+            {% if teacher %}
+            <div class="teacher-card">
+                <div class="teacher-avatar">{{ teacher.full_name[0]|upper }}</div>
+                <div class="teacher-info">
+                    <div class="name">{{ teacher.full_name }}</div>
+                    <div class="username">@{{ teacher.username }}</div>
+                </div>
+            </div>
+            {% else %}
+            <p class="no-teacher">No teacher assigned to this class.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <p class="section-label" style="margin:0;">Students ({{ enrolled|length }})</p>
+                <a href="/admin/enroll?class_id={{ cls._id }}" class="btn">Manage Enrollment</a>
+            </div>
+
+            {% if enrolled %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student</th>
+                        <th>Username</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in enrolled %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <span class="student-avatar">{{ s.full_name[0]|upper }}</span>
+                            {{ s.full_name }}
+                        </td>
+                        <td>@{{ s.username }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty">No students enrolled yet. Click "Manage Enrollment" to add students.</p>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

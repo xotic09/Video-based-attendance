@@ -11,12 +11,51 @@
             font-family: Georgia, "Times New Roman", serif;
             background: linear-gradient(160deg, #f2ece3, #fbf8f3);
             color: #2b241c;
-            padding: 24px;
+            padding: 0;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 28px;
+            background: #fffaf2;
+            border-bottom: 1px solid #d8cdbd;
+            box-shadow: 0 2px 8px rgba(60, 44, 20, 0.06);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .topbar-left a {
+            color: #1f6f5f;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .topbar-left a:hover { text-decoration: underline; }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.9rem;
+        }
+
+        .logout-link {
+            color: #9b2c2c;
+            text-decoration: none;
+            font-weight: 600;
         }
 
         main {
             max-width: 1000px;
             margin: 0 auto;
+            padding: 24px;
         }
 
         h1, h2 {
@@ -207,8 +246,21 @@
             margin-top: 8px;
         }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
+    {% if user %}
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="/teacher">&larr; Back to Dashboard</a>
+        </div>
+        <div class="topbar-right">
+            <span>{{ user.username }}</span>
+            <a href="/logout" class="logout-link">Logout</a>
+        </div>
+    </div>
+    {% endif %}
+
     <main>
         <h1>Attendance Results</h1>
 
@@ -265,7 +317,7 @@
         </div>
 
         <div class="actions">
-            <form class="action-form" action="{{ url_for('download_attendance') }}" method="post">
+            <form class="action-form" action="/download_attendance" method="post">
                 <input type="hidden" name="subject" value="{{ subject }}">
                 <input type="hidden" name="attendance_rows" value="{{ attendance_rows|tojson|forceescape }}">
                 <button type="submit" class="download">Download Excel Sheet</button>
@@ -273,12 +325,16 @@
 
             <button class="percentage-btn" onclick="showPercentage()">View Attendance Percentage</button>
 
-            <a href="{{ url_for('index') }}">Record Another Video</a>
+            {% if user %}
+                <a href="/teacher">Back to Dashboard</a>
+            {% else %}
+                <a href="/">Record Another Video</a>
+            {% endif %}
         </div>
 
         <div class="overlay" id="percentageOverlay">
             <div class="modal">
-                <h2>Overall Attendance Percentage</h2>
+                <h2>Attendance Percentage by Subject</h2>
                 <div id="percentageContent">
                     <p class="loading">Loading...</p>
                 </div>
@@ -289,6 +345,7 @@
 
     <script>
         const subject = {{ subject|tojson }};
+        const classId = {{ class_id|tojson }};
 
         function markAsPresent() {
             const checked = document.querySelectorAll('.absent-check:checked');
@@ -356,7 +413,7 @@
             })
             .catch(() => {
                 document.getElementById('markMsg').innerHTML =
-                    '<p style="color:#9b2c2c">Failed to update. Please try again.</p>';
+                    '<p style="color:#ff8b7b">Failed to update. Please try again.</p>';
                 btn.disabled = false;
                 btn.textContent = 'Mark as Present';
             });
@@ -366,7 +423,7 @@
             document.getElementById('percentageOverlay').classList.add('active');
             document.getElementById('percentageContent').innerHTML = '<p class="loading">Loading...</p>';
 
-            fetch('/attendance_percentage')
+            fetch('/attendance_percentage?subject=' + encodeURIComponent(subject) + '&class_id=' + encodeURIComponent(classId))
                 .then(res => res.json())
                 .then(data => {
                     if (data.length === 0) {
@@ -376,13 +433,14 @@
                     }
 
                     let html = '<table><thead><tr>' +
-                        '<th>Student</th><th>Present</th><th>Absent</th><th>Total</th>' +
+                        '<th>Student</th><th>Subject</th><th>Present</th><th>Absent</th><th>Total</th>' +
                         '<th class="bar-cell">Percentage</th></tr></thead><tbody>';
 
                     data.forEach(s => {
                         const level = s.percentage >= 75 ? 'high' : s.percentage >= 50 ? 'mid' : 'low';
                         html += '<tr>' +
                             '<td>' + s.name + '</td>' +
+                            '<td>' + s.subject + '</td>' +
                             '<td>' + s.present + '</td>' +
                             '<td>' + s.absent + '</td>' +
                             '<td>' + s.total_classes + '</td>' +
@@ -397,7 +455,7 @@
                 })
                 .catch(() => {
                     document.getElementById('percentageContent').innerHTML =
-                        '<p style="color:#9b2c2c">Failed to load attendance data. Please try again.</p>';
+                        '<p style="color:#ff8b7b">Failed to load attendance data. Please try again.</p>';
                 });
         }
 

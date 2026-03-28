@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Enrollment - Attendance System</title>
+    <style>
+        :root {
+            --bg: #f4f1ea;
+            --panel: #fffaf2;
+            --border: #d8cdbd;
+            --text: #2b241c;
+            --accent: #1f6f5f;
+            --accent-dark: #174f44;
+            --danger: #9b2c2c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background: linear-gradient(160deg, #f2ece3, #fbf8f3);
+            padding: 0;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 28px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(60, 44, 20, 0.06);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .topbar-left a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .topbar-left a:hover { text-decoration: underline; }
+
+        .topbar h1 { margin: 0; font-size: 1.3rem; }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.9rem;
+        }
+
+        .role-badge {
+            background: var(--accent);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .logout-link {
+            color: var(--danger);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .logout-link:hover { text-decoration: underline; }
+
+        main {
+            max-width: 900px;
+            margin: 28px auto;
+            padding: 0 24px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 12px 30px rgba(60, 44, 20, 0.08);
+            margin-bottom: 24px;
+        }
+
+        h2 { margin: 0 0 16px; }
+
+        /* Class selector */
+        .class-selector {
+            margin-bottom: 20px;
+        }
+
+        .class-selector label {
+            font-weight: 600;
+            font-size: 0.92rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .class-selector select {
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            font: inherit;
+            font-size: 0.95rem;
+            background: #fff;
+            min-width: 300px;
+        }
+
+        .class-selector select:focus {
+            outline: 2px solid var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Enrolled tags */
+        .enrolled-section {
+            margin-bottom: 20px;
+        }
+
+        .section-label {
+            font-size: 0.82rem;
+            color: #7a6d5c;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 0 10px;
+            font-weight: 600;
+        }
+
+        .enrolled-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: #edf7f4;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tag-remove {
+            background: none !important;
+            border: none;
+            color: var(--danger);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            font-weight: bold;
+            border-radius: 0;
+        }
+
+        .tag-remove:hover {
+            color: #7f1d1d;
+            background: none !important;
+        }
+
+        .no-enrolled {
+            color: #7a6d5c;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        /* Search box */
+        .search-box {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            font: inherit;
+            font-size: 0.92rem;
+            background: #fff;
+            margin-bottom: 14px;
+        }
+
+        .search-box:focus {
+            outline: 2px solid var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Student list */
+        .student-list {
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fff;
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-bottom: 1px solid #f0e8db;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .student-item:last-child { border-bottom: 0; }
+
+        .student-item:hover {
+            background: #f7f3ec;
+        }
+
+        .student-item.selected {
+            background: #edf7f4;
+        }
+
+        .student-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .student-username {
+            color: #7a6d5c;
+            font-size: 0.82rem;
+        }
+
+        .empty-list {
+            text-align: center;
+            padding: 24px;
+            color: #7a6d5c;
+            font-style: italic;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Enroll button */
+        .enroll-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+
+        .selected-count {
+            font-size: 0.9rem;
+            color: #5b5146;
+            font-weight: 600;
+        }
+
+        button, .btn {
+            border: 0;
+            border-radius: 999px;
+            padding: 10px 20px;
+            font: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #fff;
+            background: var(--accent);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        button:hover, .btn:hover { background: var(--accent-dark); }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .select-all-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #5b5146;
+        }
+
+        .select-all-bar input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="/admin">&larr; Back to Dashboard</a>
+            <h1>Student Enrollment</h1>
+        </div>
+        <div class="topbar-right">
+            <span class="role-badge">ADMIN</span>
+            <span>{{ user.username }}</span>
+            <a href="/logout" class="logout-link">Logout</a>
+        </div>
+    </div>
+
+    <main>
+        <div class="card">
+            <div class="class-selector">
+                <label for="classSelect">Select Class</label>
+                <select id="classSelect" onchange="onClassChange()">
+                    <option value="">-- Choose a class --</option>
+                    {% for cls in classes %}
+                    <option value="{{ cls._id }}"
+                        data-enrolled='{{ (cls.enrolled_students or [])|tojson }}'
+                        {% if selected_class and cls._id|string == selected_class %}selected{% endif %}>
+                        {{ cls.code }} &mdash; {{ cls.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Enrolled students for selected class -->
+            <div id="enrolledSection" class="enrolled-section hidden">
+                <p class="section-label">Currently Enrolled</p>
+                <div id="enrolledTags" class="enrolled-tags"></div>
+            </div>
+
+            <!-- Student selection area -->
+            <div id="studentArea" class="hidden">
+                <p class="section-label">Available Students</p>
+                <input type="text" class="search-box" id="searchBox" placeholder="Search students by name or username..." oninput="filterStudents()">
+
+                <div class="select-all-bar">
+                    <input type="checkbox" id="selectAllCb" onchange="toggleSelectAll()">
+                    <label for="selectAllCb" style="cursor:pointer;">Select All</label>
+                </div>
+
+                <form method="post" action="/admin/enroll-students" id="enrollForm">
+                    <input type="hidden" name="class_id" id="classIdInput" value="">
+                    <div class="student-list" id="studentList"></div>
+
+                    <div class="enroll-bar">
+                        <span class="selected-count" id="selectedCount">0 selected</span>
+                        <button type="submit" id="enrollBtn" disabled>Enroll Selected</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="noClassMsg">
+                <p style="color:var(--muted); text-align:center; padding:20px;">Select a class above to manage enrollment.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const allStudents = [
+            {% for s in students %}
+            { username: {{ s.username|tojson }}, full_name: {{ s.full_name|tojson }} },
+            {% endfor %}
+        ];
+
+        function onClassChange() {
+            const sel = document.getElementById('classSelect');
+            const opt = sel.options[sel.selectedIndex];
+            const classId = sel.value;
+
+            const enrolledSection = document.getElementById('enrolledSection');
+            const studentArea = document.getElementById('studentArea');
+            const noClassMsg = document.getElementById('noClassMsg');
+
+            if (!classId) {
+                enrolledSection.classList.add('hidden');
+                studentArea.classList.add('hidden');
+                noClassMsg.classList.remove('hidden');
+                return;
+            }
+
+            noClassMsg.classList.add('hidden');
+            document.getElementById('classIdInput').value = classId;
+
+            // Show enrolled students
+            const enrolled = JSON.parse(opt.dataset.enrolled || '[]');
+            const tagsDiv = document.getElementById('enrolledTags');
+
+            if (enrolled.length > 0) {
+                let tagsHtml = '';
+                enrolled.forEach(username => {
+                    tagsHtml += '<span class="tag">' + username +
+                        '<form method="post" action="/admin/unenroll-student" style="display:inline;margin:0;">' +
+                        '<input type="hidden" name="class_id" value="' + classId + '">' +
+                        '<input type="hidden" name="student_username" value="' + username + '">' +
+                        '<button type="submit" class="tag-remove" title="Remove ' + username + '">&times;</button>' +
+                        '</form></span>';
+                });
+                tagsDiv.innerHTML = tagsHtml;
+                enrolledSection.classList.remove('hidden');
+            } else {
+                tagsDiv.innerHTML = '<span class="no-enrolled">No students enrolled yet.</span>';
+                enrolledSection.classList.remove('hidden');
+            }
+
+            // Build available students list (not already enrolled)
+            const available = allStudents.filter(s => !enrolled.includes(s.username));
+            const listDiv = document.getElementById('studentList');
+
+            if (available.length > 0) {
+                let listHtml = '';
+                available.forEach(s => {
+                    listHtml += '<label class="student-item" data-name="' + s.full_name.toLowerCase() + '" data-user="' + s.username.toLowerCase() + '">' +
+                        '<input type="checkbox" name="student_usernames" value="' + s.username + '" onchange="updateCount()">' +
+                        '<div class="student-info">' +
+                        '<div class="student-name">' + s.full_name + '</div>' +
+                        '<div class="student-username">@' + s.username + '</div>' +
+                        '</div></label>';
+                });
+                listDiv.innerHTML = listHtml;
+                studentArea.classList.remove('hidden');
+            } else {
+                listDiv.innerHTML = '<div class="empty-list">All students are already enrolled in this class.</div>';
+                studentArea.classList.remove('hidden');
+            }
+
+            // Reset
+            document.getElementById('searchBox').value = '';
+            document.getElementById('selectAllCb').checked = false;
+            updateCount();
+        }
+
+        function filterStudents() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            document.querySelectorAll('.student-item').forEach(item => {
+                const name = item.dataset.name;
+                const user = item.dataset.user;
+                if (name.includes(query) || user.includes(query)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+
+        function updateCount() {
+            const checked = document.querySelectorAll('#studentList input[type="checkbox"]:checked');
+            const count = checked.length;
+            document.getElementById('selectedCount').textContent = count + ' selected';
+            document.getElementById('enrollBtn').disabled = count === 0;
+
+            // Update item highlight
+            document.querySelectorAll('.student-item').forEach(item => {
+                const cb = item.querySelector('input[type="checkbox"]');
+                item.classList.toggle('selected', cb.checked);
+            });
+
+            // Update select all state
+            const total = document.querySelectorAll('#studentList input[type="checkbox"]').length;
+            document.getElementById('selectAllCb').checked = total > 0 && count === total;
+        }
+
+        function toggleSelectAll() {
+            const checked = document.getElementById('selectAllCb').checked;
+            document.querySelectorAll('.student-item:not(.hidden) input[type="checkbox"]').forEach(cb => {
+                cb.checked = checked;
+            });
+            updateCount();
+        }
+
+        // Auto-select class if coming back from enroll/unenroll
+        window.addEventListener('DOMContentLoaded', function() {
+            const sel = document.getElementById('classSelect');
+            if (sel.value) onClassChange();
+        });
+    </script>
+</body>
+</html>

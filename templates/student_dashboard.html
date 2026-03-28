@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Attendance - Attendance System</title>
+    <style>
+        :root {
+            --bg: #241307;
+            --bg-soft: #34200d;
+            --panel: #4b2706;
+            --panel-soft: #5c3410;
+            --card: #3d2208;
+            --border: rgba(238, 200, 148, 0.18);
+            --text: #f7efe3;
+            --muted: #d1b896;
+            --accent: #9ff1dc;
+            --danger: #ff8b7b;
+            --shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top, rgba(141, 88, 20, 0.28), transparent 34%),
+                linear-gradient(180deg, #452608 0%, var(--bg) 14%, #231507 100%);
+        }
+
+        a { color: inherit; }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
+            padding: 18px 28px;
+            background: rgba(36, 19, 7, 0.9);
+            border-bottom: 1px solid rgba(230, 179, 98, 0.16);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            backdrop-filter: blur(10px);
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 1.45rem;
+            color: #fff5ea;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 0.95rem;
+            color: var(--muted);
+        }
+
+        .role-badge {
+            background: linear-gradient(135deg, #d39a31, #b97814);
+            color: #fff6e6;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+
+        .logout-link {
+            color: var(--danger);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .logout-link:hover { text-decoration: underline; }
+
+        main {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 34px 24px 46px;
+        }
+
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: rgba(77, 48, 17, 0.7);
+            border: 1px solid rgba(236, 193, 122, 0.12);
+            border-radius: 18px;
+            padding: 20px 18px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card .number {
+            font-size: 2.35rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--accent);
+        }
+
+        .stat-card .label {
+            margin-top: 8px;
+            color: #ead5b8;
+            font-size: 1rem;
+        }
+
+        .panel {
+            background: linear-gradient(180deg, rgba(83, 43, 8, 0.92), rgba(60, 30, 8, 0.96));
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .eyebrow {
+            margin: 0 0 8px;
+            color: #d6b27c;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-size: 0.78rem;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: #fff8f0;
+        }
+
+        .section-note {
+            margin: 0;
+            max-width: 360px;
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .subject-card {
+            background: linear-gradient(180deg, rgba(64, 35, 11, 0.98), rgba(47, 25, 7, 0.98));
+            border: 1px solid rgba(255, 222, 173, 0.12);
+            border-radius: 24px;
+            padding: 22px;
+            min-height: 240px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subject-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.08), transparent 34%);
+            pointer-events: none;
+        }
+
+        .subject-card.low {
+            --ring-color: #ef6a5f;
+            --ring-track: rgba(239, 106, 95, 0.14);
+            --pill-bg: rgba(239, 106, 95, 0.14);
+            --pill-text: #ffb8b0;
+        }
+
+        .subject-card.mid {
+            --ring-color: #efba4f;
+            --ring-track: rgba(239, 186, 79, 0.14);
+            --pill-bg: rgba(239, 186, 79, 0.14);
+            --pill-text: #ffd990;
+        }
+
+        .subject-card.high {
+            --ring-color: #62dfbe;
+            --ring-track: rgba(98, 223, 190, 0.14);
+            --pill-bg: rgba(98, 223, 190, 0.14);
+            --pill-text: #bff7e8;
+        }
+
+        .subject-layout {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 132px;
+            gap: 18px;
+            align-items: center;
+            height: 100%;
+        }
+
+        .subject-code {
+            margin: 0 0 10px;
+            color: #ddb981;
+            font-size: 0.8rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .subject-title {
+            margin: 0;
+            font-size: 1.55rem;
+            line-height: 1.15;
+            color: #fff8ed;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 14px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--pill-bg);
+            color: var(--pill-text);
+            font-size: 0.84rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .metric {
+            background: rgba(255, 245, 229, 0.05);
+            border: 1px solid rgba(255, 222, 173, 0.08);
+            border-radius: 16px;
+            padding: 12px 14px;
+        }
+
+        .metric-label {
+            display: block;
+            color: #d1b896;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            display: block;
+            color: #fff5e8;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .subject-visual {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .progress-ring {
+            width: 128px;
+            height: 128px;
+            border-radius: 50%;
+            background: conic-gradient(var(--ring-color) var(--progress), var(--ring-track) 0);
+            display: grid;
+            place-items: center;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .progress-ring-inner {
+            width: 92px;
+            height: 92px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #331a08, #231205);
+            border: 1px solid rgba(255, 222, 173, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8px;
+        }
+
+        .progress-value {
+            color: #fff8ed;
+            font-size: 1.4rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .progress-copy {
+            color: #c8b091;
+            font-size: 0.72rem;
+            margin-top: 6px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .progress-caption {
+            color: var(--pill-text);
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 70px 28px;
+            color: #e0ccb0;
+        }
+
+        .empty-state h2 {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            margin: 8px 0 0;
+            color: #c7ab85;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 1080px) {
+            .subjects-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 900px) {
+            .summary-row {
+                grid-template-columns: 1fr;
+            }
+
+            .section-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .subjects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .subject-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .subject-visual {
+                flex-direction: row;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .topbar {
+                padding: 16px 18px;
+            }
+
+            main {
+                padding: 24px 16px 36px;
+            }
+
+            .panel {
+                padding: 20px;
+                border-radius: 22px;
+            }
+
+            .subject-card {
+                padding: 18px;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .subject-visual {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>My Attendance</h1>
+        <div class="topbar-right">
+            <span class="role-badge">STUDENT</span>
+            <span>{{ user.username }}</span>
+            <a href="/logout" class="logout-link">Logout</a>
+        </div>
+    </div>
+
+    <main>
+        {% if subjects %}
+        <div class="summary-row">
+            <div class="stat-card">
+                <div class="number">{{ subjects|length }}</div>
+                <div class="label">Assigned Classes</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">{{ subjects|map(attribute='present')|sum }}</div>
+                <div class="label">Classes Attended</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">{{ subjects|map(attribute='total_classes')|sum }}</div>
+                <div class="label">Total Classes</div>
+            </div>
+        </div>
+
+        <section class="panel">
+            <div class="section-head">
+                <div>
+                    <p class="eyebrow">Assigned Classes</p>
+                    <h2>Attendance by Class</h2>
+                </div>
+                <p class="section-note">
+                    Every assigned class is shown here, including classes with no attendance yet and classes that are exactly at 0% or 100%.
+                </p>
+            </div>
+
+            <div class="subjects-grid">
+                {% for s in subjects %}
+                {% set level = 'high' if s.percentage >= 75 else ('mid' if s.percentage >= 50 else 'low') %}
+                <article class="subject-card {{ level }}">
+                    <div class="subject-layout">
+                        <div class="subject-details">
+                            <p class="subject-code">{{ s.code }}</p>
+                            <h3 class="subject-title">{{ s.subject }}</h3>
+                            <span class="status-pill">
+                                {% if s.percentage >= 75 %}
+                                Strong attendance
+                                {% elif s.percentage >= 50 %}
+                                Needs improvement
+                                {% else %}
+                                Attendance is low
+                                {% endif %}
+                            </span>
+
+                            <div class="metrics-grid">
+                                <div class="metric">
+                                    <span class="metric-label">Present</span>
+                                    <span class="metric-value">{{ s.present }}</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Absent</span>
+                                    <span class="metric-value">{{ s.absent }}</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Total Classes</span>
+                                    <span class="metric-value">{{ s.total_classes }}</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Attendance</span>
+                                    <span class="metric-value">{{ s.percentage_label }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="subject-visual">
+                            <div class="progress-ring" style="--progress: {{ s.percentage }}%;">
+                                <div class="progress-ring-inner">
+                                    <span class="progress-value">{{ s.percentage_label }}</span>
+                                    <span class="progress-copy">Attendance</span>
+                                </div>
+                            </div>
+                            <div class="progress-caption">{{ s.present }} / {{ s.total_classes }} classes</div>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% else %}
+        <section class="panel">
+            <div class="empty-state">
+                <h2>No Classes Assigned</h2>
+                <p>Your account is not enrolled in any class yet.</p>
+                <p>Once a class is assigned, it will appear here even before the first attendance record is created.</p>
+            </div>
+        </section>
+        {% endif %}
+    </main>
+</body>
+</html>

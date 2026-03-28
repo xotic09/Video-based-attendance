@@ -1,0 +1,336 @@
+:root {
+    --bg: #241307;
+    --bg-soft: #34200d;
+    --panel: #4b2706;
+    --panel-soft: #5c3410;
+    --panel-deep: #3d2208;
+    --border: rgba(238, 200, 148, 0.18);
+    --border-strong: rgba(238, 200, 148, 0.28);
+    --text: #f7efe3;
+    --text-strong: #fff8ed;
+    --muted: #d1b896;
+    --muted-strong: #ead5b8;
+    --accent: #d39a31;
+    --accent-dark: #b97814;
+    --accent-soft: rgba(211, 154, 49, 0.16);
+    --accent-contrast: #fff6e6;
+    --success: #9ff1dc;
+    --success-soft: rgba(159, 241, 220, 0.16);
+    --danger: #ff8b7b;
+    --danger-dark: #d96d60;
+    --danger-soft: rgba(255, 139, 123, 0.16);
+    --shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+body {
+    color: var(--text) !important;
+    background:
+        radial-gradient(circle at top, rgba(141, 88, 20, 0.28), transparent 34%),
+        linear-gradient(180deg, #452608 0%, var(--bg) 14%, #231507 100%) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-strong);
+}
+
+.topbar {
+    background: rgba(36, 19, 7, 0.9) !important;
+    border-bottom: 1px solid var(--border) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18) !important;
+    backdrop-filter: blur(10px);
+}
+
+.topbar h1,
+.topbar-left h1 {
+    color: var(--text-strong) !important;
+}
+
+.topbar-right,
+.topbar-left,
+.topbar-right span {
+    color: var(--muted-strong);
+}
+
+.topbar-left a,
+.footer a,
+.username-link,
+.class-link {
+    color: var(--accent) !important;
+}
+
+.topbar-left a:hover,
+.footer a:hover,
+.username-link:hover,
+.class-link:hover {
+    color: var(--muted-strong) !important;
+}
+
+.role-badge,
+.class-badge {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark)) !important;
+    color: var(--accent-contrast) !important;
+    box-shadow: 0 10px 20px rgba(211, 154, 49, 0.18);
+}
+
+.logout-link {
+    color: var(--danger) !important;
+}
+
+.shell,
+.card,
+.class-card,
+.empty-state,
+.panel,
+section,
+.modal {
+    background: linear-gradient(180deg, rgba(83, 43, 8, 0.92), rgba(60, 30, 8, 0.96)) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: var(--shadow) !important;
+    color: var(--text);
+}
+
+.shell {
+    backdrop-filter: blur(12px);
+}
+
+.modal {
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38) !important;
+}
+
+.cred-banner,
+.teacher-card,
+.tag,
+.student-item.selected,
+.info-card {
+    background: var(--accent-soft) !important;
+    border: 1px solid var(--border-strong) !important;
+    color: var(--text);
+}
+
+.teacher-avatar,
+.student-avatar {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark)) !important;
+    color: var(--accent-contrast) !important;
+}
+
+.class-code {
+    background: rgba(255, 245, 229, 0.08) !important;
+    color: var(--muted-strong) !important;
+    border: 1px solid var(--border);
+}
+
+.meta,
+.subtitle,
+.footer,
+.loading,
+.empty,
+.section-label,
+.selected-count,
+.student-username,
+.teacher-info .username,
+.info-label,
+.info-value.muted,
+.no-teacher,
+.unassigned,
+.status,
+.class-selector label,
+.student-name + .student-username,
+.empty-list,
+.shell p,
+.empty-state p {
+    color: var(--muted) !important;
+}
+
+.assigned,
+.present,
+.moved-msg,
+.info-value.accent {
+    color: var(--success) !important;
+}
+
+.absent {
+    color: var(--danger) !important;
+}
+
+table {
+    color: var(--text);
+}
+
+th,
+td {
+    border-bottom: 1px solid rgba(255, 232, 205, 0.08) !important;
+}
+
+th {
+    background: rgba(255, 245, 229, 0.08) !important;
+    color: var(--muted-strong);
+}
+
+li {
+    border-bottom: 1px solid rgba(255, 232, 205, 0.08) !important;
+}
+
+select,
+input,
+textarea,
+.search-box {
+    background: rgba(32, 16, 6, 0.82) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border-strong) !important;
+    box-shadow: none;
+}
+
+select::placeholder,
+input::placeholder,
+textarea::placeholder,
+.search-box::placeholder {
+    color: rgba(209, 184, 150, 0.72);
+}
+
+select:focus,
+input:focus,
+textarea:focus,
+.search-box:focus {
+    outline: 2px solid rgba(211, 154, 49, 0.28) !important;
+    border-color: var(--accent) !important;
+}
+
+input[readonly] {
+    background: rgba(255, 245, 229, 0.08) !important;
+    color: var(--muted-strong) !important;
+}
+
+.student-list {
+    background: rgba(32, 16, 6, 0.82) !important;
+    border: 1px solid var(--border-strong) !important;
+}
+
+.student-item {
+    border-bottom: 1px solid rgba(255, 232, 205, 0.08) !important;
+}
+
+.student-item:hover {
+    background: rgba(255, 245, 229, 0.06) !important;
+}
+
+button,
+.btn,
+.take-btn,
+.percentage-btn,
+.mark-present-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark)) !important;
+    color: var(--accent-contrast) !important;
+    box-shadow: 0 10px 20px rgba(211, 154, 49, 0.18);
+}
+
+button:hover,
+.btn:hover,
+.take-btn:hover,
+.percentage-btn:hover,
+.mark-present-btn:hover {
+    filter: brightness(1.06);
+}
+
+.username-link {
+    background: none !important;
+    color: var(--success) !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.username-link:hover {
+    color: var(--muted-strong) !important;
+    filter: none !important;
+}
+
+.actions a {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark)) !important;
+    color: var(--accent-contrast) !important;
+    box-shadow: 0 10px 20px rgba(211, 154, 49, 0.18);
+}
+
+.actions a:hover {
+    filter: brightness(1.06);
+}
+
+.secondary,
+.download,
+.close-btn,
+.btn-secondary {
+    background: rgba(255, 245, 229, 0.12) !important;
+    color: var(--muted-strong) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: none !important;
+}
+
+.secondary:hover,
+.download:hover,
+.close-btn:hover,
+.btn-secondary:hover {
+    background: rgba(255, 245, 229, 0.18) !important;
+}
+
+.btn-danger,
+.danger,
+.tag-remove {
+    background: var(--danger-soft) !important;
+    color: var(--danger) !important;
+    border: 1px solid rgba(255, 139, 123, 0.24) !important;
+    box-shadow: none !important;
+}
+
+.btn-danger:hover,
+.danger:hover,
+.tag-remove:hover {
+    background: rgba(255, 139, 123, 0.22) !important;
+    color: #ffd1ca !important;
+}
+
+.password-value {
+    background: rgba(32, 16, 6, 0.82) !important;
+    border: 1px solid var(--border-strong) !important;
+    color: var(--text-strong) !important;
+}
+
+.error,
+.error-banner {
+    background: var(--danger-soft) !important;
+    border: 1px solid rgba(255, 139, 123, 0.24) !important;
+    color: var(--danger) !important;
+}
+
+.overlay {
+    background: rgba(15, 9, 4, 0.74) !important;
+}
+
+.video-overlay {
+    background: rgba(15, 9, 4, 0.78) !important;
+    color: var(--text-strong) !important;
+}
+
+video {
+    background: #1a1007 !important;
+}
+
+.bar-bg {
+    background: rgba(255, 245, 229, 0.08) !important;
+}
+
+.bar-fill.high {
+    background: #62dfbe !important;
+}
+
+.bar-fill.mid {
+    background: var(--accent) !important;
+}
+
+.bar-fill.low {
+    background: var(--danger) !important;
+}
+
+.absent-item input[type="checkbox"],
+.student-item input[type="checkbox"],
+.select-all-bar input[type="checkbox"] {
+    accent-color: var(--accent);
+}

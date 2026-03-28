@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Attendance System</title>
+    <style>
+        :root {
+            --bg: #f4f1ea;
+            --panel: #fffaf2;
+            --border: #d8cdbd;
+            --text: #2b241c;
+            --accent: #1f6f5f;
+            --accent-dark: #174f44;
+            --danger: #9b2c2c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background: linear-gradient(160deg, #f2ece3, #fbf8f3);
+            padding: 0;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 28px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(60, 44, 20, 0.06);
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.9rem;
+        }
+
+        .role-badge {
+            background: #4a6fa5;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .logout-link {
+            color: var(--danger);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .logout-link:hover { text-decoration: underline; }
+
+        main {
+            max-width: 900px;
+            margin: 28px auto;
+            padding: 0 24px;
+        }
+
+        h2 { margin: 0 0 18px; }
+
+        .class-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .class-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 12px 30px rgba(60, 44, 20, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .class-code {
+            font-size: 0.85rem;
+            color: #7a6d5c;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: none !important;
+            border: none !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .class-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .take-btn {
+            border: 0;
+            border-radius: 999px;
+            padding: 12px 18px;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            color: #fff;
+            background: var(--accent);
+            text-decoration: none;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .take-btn:hover { background: var(--accent-dark); }
+
+        .empty-state {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 48px 24px;
+            text-align: center;
+            box-shadow: 0 12px 30px rgba(60, 44, 20, 0.08);
+        }
+
+        .empty-state p {
+            color: #7a6d5c;
+            font-size: 1.05rem;
+            margin: 0;
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+    <style>
+        .class-card .class-code {
+            background: none !important;
+            border: none !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <h1>Teacher Dashboard</h1>
+        <div class="topbar-right">
+            <span class="role-badge">TEACHER</span>
+            <span>{{ user.username }}</span>
+            <a href="/logout" class="logout-link">Logout</a>
+        </div>
+    </div>
+
+    <main>
+        <h2>Your Assigned Classes</h2>
+
+        {% if classes %}
+        <div class="class-grid">
+            {% for cls in classes %}
+            <div class="class-card">
+                <span class="class-code">{{ cls.code }}</span>
+                <p class="class-name">{{ cls.name }}</p>
+                <a href="/teacher/attendance/{{ cls._id }}" class="take-btn">Take Attendance</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No classes assigned to you yet. Please contact the administrator.</p>
+        </div>
+        {% endif %}
+    </main>
+</body>
+</html>

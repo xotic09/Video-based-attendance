@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Attendance System</title>
+    <style>
+        :root {
+            --bg: #f4f1ea;
+            --panel: #fffaf2;
+            --border: #d8cdbd;
+            --text: #2b241c;
+            --accent: #1f6f5f;
+            --accent-dark: #174f44;
+            --danger: #9b2c2c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--text);
+            background: linear-gradient(160deg, #f2ece3, #fbf8f3);
+            padding: 0;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 28px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(60, 44, 20, 0.06);
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.9rem;
+        }
+
+        .role-badge {
+            background: var(--accent);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .logout-link {
+            color: var(--danger);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .logout-link:hover { text-decoration: underline; }
+
+        main {
+            max-width: 1000px;
+            margin: 28px auto;
+            padding: 0 24px;
+        }
+
+        h2 { margin: 0 0 18px; }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 12px 30px rgba(60, 44, 20, 0.08);
+            margin-bottom: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 14px;
+            border-bottom: 1px solid #eee3d3;
+        }
+
+        th {
+            background: #f0e8db;
+            font-weight: bold;
+        }
+
+        tr:last-child td { border-bottom: 0; }
+
+        .assigned {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .unassigned {
+            color: #7a6d5c;
+            font-style: italic;
+        }
+
+        .action-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-cell form {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+        }
+
+        select {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font: inherit;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+
+        button, .btn {
+            border: 0;
+            border-radius: 999px;
+            padding: 8px 16px;
+            font: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #fff;
+            background: var(--accent);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        button:hover, .btn:hover { background: var(--accent-dark); }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-danger:hover { background: #7f1d1d; }
+
+        .empty {
+            text-align: center;
+            padding: 30px;
+            color: #7a6d5c;
+        }
+
+        .create-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .create-form label {
+            display: grid;
+            gap: 4px;
+            font-weight: 600;
+            font-size: 0.88rem;
+        }
+
+        .create-form input {
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            font: inherit;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+
+        .create-form input:focus {
+            outline: 2px solid var(--accent);
+            border-color: var(--accent);
+        }
+
+        .class-link:hover { text-decoration: underline; }
+
+        @media (max-width: 640px) {
+            .action-cell {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+</head>
+<body>
+    <div class="topbar">
+        <h1>Admin Dashboard</h1>
+        <div class="topbar-right">
+            <a href="/admin/enroll" class="btn" style="font-size:0.82rem;">Student Enrollment</a>
+            <a href="/admin/users" class="btn" style="font-size:0.82rem;">Manage Users</a>
+            <span class="role-badge">ADMIN</span>
+            <span>{{ user.username }}</span>
+            <a href="/logout" class="logout-link">Logout</a>
+        </div>
+    </div>
+
+    <main>
+        <div class="card">
+            <h2>Add New Class</h2>
+            <form class="create-form" method="post" action="/admin/add-class">
+                <label>
+                    Code
+                    <input type="text" name="code" required placeholder="e.g. CS106">
+                </label>
+                <label>
+                    Class Name
+                    <input type="text" name="name" required placeholder="e.g. Machine Learning">
+                </label>
+                <button type="submit">Add Class</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Class Assignments</h2>
+            <p style="color:var(--muted); margin:0 0 16px; font-size:0.92rem;">Assign teachers to classes. Teachers can only take attendance for their assigned classes.</p>
+
+            {% if classes %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Class Name</th>
+                        <th>Assigned Teacher</th>
+                        <th>Students</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cls in classes %}
+                    <tr>
+                        <td><strong>{{ cls.code }}</strong></td>
+                        <td><a href="/admin/class/{{ cls._id }}" style="color:var(--accent); font-weight:600; text-decoration:none;">{{ cls.name }}</a></td>
+                        <td>
+                            {% if cls.assigned_teacher %}
+                                <span class="assigned">{{ cls.assigned_teacher }}</span>
+                            {% else %}
+                                <span class="unassigned">Not assigned</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ (cls.enrolled_students or [])|length }}</td>
+                        <td>
+                            <div class="action-cell">
+                                {% if cls.assigned_teacher %}
+                                    <form method="post" action="/admin/unassign">
+                                        <input type="hidden" name="class_id" value="{{ cls._id }}">
+                                        <button type="submit" class="btn-danger">Unassign</button>
+                                    </form>
+                                {% endif %}
+
+                                <form method="post" action="/admin/assign">
+                                    <input type="hidden" name="class_id" value="{{ cls._id }}">
+                                    <select name="teacher_username" required>
+                                        <option value="">Select teacher</option>
+                                        {% for teacher in teachers %}
+                                            <option value="{{ teacher.username }}"
+                                                {% if cls.assigned_teacher == teacher.username %}selected{% endif %}>
+                                                {{ teacher.full_name }} ({{ teacher.username }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit">Assign</button>
+                                </form>
+
+                                <form method="post" action="/admin/delete-class" onsubmit="return confirm('Delete class {{ cls.code }}?')">
+                                    <input type="hidden" name="class_id" value="{{ cls._id }}">
+                                    <button type="submit" class="btn-danger">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p class="empty">No classes found.</p>
+            {% endif %}
+        </div>
+
+        {% if teachers %}
+        <div class="card">
+            <h2>Registered Teachers</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Full Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for teacher in teachers %}
+                    <tr>
+                        <td>{{ teacher.username }}</td>
+                        <td>{{ teacher.full_name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="card">
+            <h2>Registered Teachers</h2>
+            <p class="empty">No teachers created yet. <a href="/admin/users">Create teachers</a> from the Manage Users page.</p>
+        </div>
+        {% endif %}
+    </main>
+</body>
+</html>
