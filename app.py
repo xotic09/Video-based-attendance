@@ -43,6 +43,7 @@ users_collection = mongo_db["users"]
 classes_collection = mongo_db["classes"]
 
 UPLOAD_FOLDER = "uploads"
+TRAIN_IMG_FOLDER = "./train_img"
 ALLOWED_EXTENSIONS = {"webm", "mp4", "mov", "avi", "mkv"}
 FRAME_SAMPLE_INTERVAL = 15
 MIN_PRESENT_DETECTIONS = 2
@@ -237,6 +238,52 @@ def role_required(role):
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def get_available_face_folders():
+    """Return list of folder names in train_img/ that aren't already assigned to a user."""
+    all_folders = [
+        d for d in os.listdir(TRAIN_IMG_FOLDER)
+        if os.path.isdir(os.path.join(TRAIN_IMG_FOLDER, d)) and not d.startswith(".")
+    ]
+    assigned = set()
+    for user in users_collection.find({"face_id": {"$exists": True, "$ne": ""}}, {"face_id": 1}):
+        assigned.add(user["face_id"])
+    return sorted(f for f in all_folders if f not in assigned)
+
+
+def render_admin_users_page(**context):
+    teachers = list(users_collection.find({"role": "teacher"}, {"password": 0, "_id": 0}))
+    students = list(users_collection.find({"role": "student"}, {"password": 0, "_id": 0}))
+    context.setdefault("form_data", {})
+    return render_template(
+        "admin_users.html",
+        teachers=teachers,
+        students=students,
+        user=request.user,
+        face_folders=get_available_face_folders(),
+        **context,
+    )
+
+
+def build_face_id_to_username_map():
+    """Build a dict mapping face_id (train_img folder name) -> username for all students."""
+    mapping = {}
+    for user in users_collection.find({"face_id": {"$exists": True, "$ne": ""}}, {"username": 1, "face_id": 1}):
+        mapping[user["face_id"]] = user["username"]
+    return mapping
+
+
+def translate_face_names_to_usernames(detected_names):
+    """Convert face recognition results (folder names) to usernames using face_id mapping."""
+    mapping = build_face_id_to_username_map()
+    translated = set()
+    for name in detected_names:
+        if name in mapping:
+            translated.add(mapping[name])
+        else:
+            translated.add(name)
+    return translated
 
 
 def sanitize_student_name(name):
@@ -449,7 +496,9 @@ def process_video(video_path, frame_interval=FRAME_SAMPLE_INTERVAL):
 
             if frame_index % frame_interval == 0:
                 _, detected_names = face_recognition_instance.recognize_faces(frame)
-                detection_counts.update(detected_names)
+                detection_counts.update(
+                    translate_face_names_to_usernames(detected_names)
+                )
                 processed_frames += 1
 
             frame_index += 1
@@ -651,14 +700,7 @@ def unenroll_student():
 @app.route("/admin/users")
 @role_required("admin")
 def admin_users():
-    teachers = list(users_collection.find({"role": "teacher"}, {"password": 0, "_id": 0}))
-    students = list(users_collection.find({"role": "student"}, {"password": 0, "_id": 0}))
-    return render_template(
-        "admin_users.html",
-        teachers=teachers,
-        students=students,
-        user=request.user,
-    )
+    return render_admin_users_page()
 
 
 @app.route("/admin/create-user", methods=["POST"])
@@ -667,60 +709,58 @@ def create_user():
     username = request.form.get("username", "").strip()
     full_name = request.form.get("full_name", "").strip()
     role = request.form.get("role", "student")
+    face_id = request.form.get("face_id", "").strip()
+    form_data = {
+        "username": username,
+        "full_name": full_name,
+        "role": role,
+        "face_id": face_id,
+    }
 
     if not username or not full_name:
-        teachers = list(users_collection.find({"role": "teacher"}, {"password": 0, "_id": 0}))
-        students = list(users_collection.find({"role": "student"}, {"password": 0, "_id": 0}))
-        return render_template(
-            "admin_users.html",
-            teachers=teachers,
-            students=students,
-            user=request.user,
+        return render_admin_users_page(
             error="Username and full name are required",
+            form_data=form_data,
         )
 
     if role not in ("teacher", "student"):
-        teachers = list(users_collection.find({"role": "teacher"}, {"password": 0, "_id": 0}))
-        students = list(users_collection.find({"role": "student"}, {"password": 0, "_id": 0}))
-        return render_template(
-            "admin_users.html",
-            teachers=teachers,
-            students=students,
-            user=request.user,
+        return render_admin_users_page(
             error="Invalid role",
+            form_data=form_data,
         )
 
     if users_collection.find_one({"username": username}):
-        teachers = list(users_collection.find({"role": "teacher"}, {"password": 0, "_id": 0}))
-        students = list(users_collection.find({"role": "student"}, {"password": 0, "_id": 0}))
-        return render_template(
-            "admin_users.html",
-            teachers=teachers,
-            students=students,
-            user=request.user,
+        return render_admin_users_page(
             error=f"Username '{username}' already exists",
+            form_data=form_data,
         )
 
-    raw_password = generate_password()
-    users_collection.insert_one(
-        {
-            "username": username,
-            "password": generate_password_hash(raw_password),
-            "raw_password": raw_password,
-            "role": role,
-            "full_name": full_name,
-        }
-    )
+    if role == "student":
+        available_face_folders = get_available_face_folders()
+        if not face_id:
+            return render_admin_users_page(
+                error="Select the student's face data from train_img before creating the user",
+                form_data=form_data,
+            )
+        if face_id not in available_face_folders:
+            return render_admin_users_page(
+                error="Selected face data is invalid or already assigned to another student",
+                form_data=form_data,
+            )
 
-    teachers = list(users_collection.find({"role": "teacher"}, {"password": 0, "_id": 0}))
-    students = list(users_collection.find({"role": "student"}, {"password": 0, "_id": 0}))
-    return render_template(
-        "admin_users.html",
-        teachers=teachers,
-        students=students,
-        user=request.user,
-        show_username=username,
-    )
+    raw_password = generate_password()
+    user_doc = {
+        "username": username,
+        "password": generate_password_hash(raw_password),
+        "raw_password": raw_password,
+        "role": role,
+        "full_name": full_name,
+    }
+    if role == "student":
+        user_doc["face_id"] = face_id
+    users_collection.insert_one(user_doc)
+
+    return render_admin_users_page(show_username=username)
 
 
 @app.route("/admin/delete-user", methods=["POST"])
@@ -759,13 +799,7 @@ def reset_password():
         {"$set": {"password": generate_password_hash(raw_password), "raw_password": raw_password}},
     )
 
-    teachers = list(users_collection.find({"role": "teacher"}, {"password": 0, "_id": 0}))
-    students = list(users_collection.find({"role": "student"}, {"password": 0, "_id": 0}))
-    return render_template(
-        "admin_users.html",
-        teachers=teachers,
-        students=students,
-        user=request.user,
+    return render_admin_users_page(
         show_username=username,
     )
 

@@ -35,6 +35,40 @@
             color: var(--muted-strong);
         }
 
+        .face-picker-row {
+            display: grid;
+            gap: 8px;
+        }
+
+        .face-picker-control {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .face-display {
+            min-height: 42px;
+            min-width: 220px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text);
+        }
+
+        .face-display.empty {
+            color: var(--muted);
+        }
+
+        .face-help {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
         @media (min-width: 640px) {
             .create-form {
                 flex-direction: row;
@@ -216,6 +250,52 @@
 
         .modal-actions button { flex: 1; }
 
+        .face-modal {
+            padding: 24px !important;
+            max-width: 560px;
+            width: calc(100% - 32px);
+            max-height: min(80vh, 720px);
+            overflow: auto;
+        }
+
+        .face-option-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .face-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease), transform 160ms var(--ease);
+        }
+
+        .face-option:hover {
+            transform: translateY(-1px);
+            border-color: var(--purple-300);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.08);
+        }
+
+        .face-option input {
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        .face-option-name {
+            font-weight: 700;
+            color: var(--text-strong);
+        }
+
+        .face-option-meta {
+            font-size: 0.84rem;
+            color: var(--muted);
+        }
+
         .password-value {
             font-family: 'Courier New', monospace;
             font-size: 1.05rem;
@@ -252,21 +332,32 @@
         <section class="card" style="padding: 20px !important;">
             <h2 class="section-title">➕ Create New User</h2>
             <p class="section-desc">A password will be auto-generated. Share credentials with the user after creation.</p>
-            <form class="create-form" method="post" action="/admin/create-user">
+            <form class="create-form" method="post" action="/admin/create-user" id="createUserForm">
                 <label>
                     Full Name
-                    <input type="text" name="full_name" required placeholder="e.g. John Doe">
+                    <input type="text" name="full_name" required placeholder="e.g. John Doe" value="{{ form_data.full_name | default('', true) }}">
                 </label>
                 <label>
                     Username
-                    <input type="text" name="username" required placeholder="e.g. johndoe">
+                    <input type="text" name="username" required placeholder="e.g. johndoe" value="{{ form_data.username | default('', true) }}">
                 </label>
                 <label>
                     Role
-                    <select name="role" required>
-                        <option value="student">Student</option>
-                        <option value="teacher">Teacher</option>
+                    <select name="role" id="roleSelect" required>
+                        <option value="student" {% if (form_data.role | default('student', true)) == 'student' %}selected{% endif %}>Student</option>
+                        <option value="teacher" {% if form_data.role == 'teacher' %}selected{% endif %}>Teacher</option>
                     </select>
+                </label>
+                <label id="facePickerField" class="face-picker-row">
+                    Student Face Data
+                    <input type="hidden" name="face_id" id="faceIdInput" value="{{ form_data.face_id | default('', true) }}">
+                    <div class="face-picker-control">
+                        <div class="face-display {% if not form_data.face_id %}empty{% endif %}" id="selectedFaceLabel">
+                            {{ form_data.face_id | default('No train_img folder selected', true) }}
+                        </div>
+                        <button type="button" class="btn-secondary" id="openFacePickerBtn">Select From train_img</button>
+                    </div>
+                    <p class="face-help">Student accounts must be linked to an existing face folder from <code>train_img</code>.</p>
                 </label>
                 <button type="submit">Create User</button>
             </form>
@@ -365,6 +456,34 @@
         </div>
     </div>
 
+    <div class="overlay" id="faceOverlay">
+        <div class="face-modal card">
+            <h3>Select Student Face Data</h3>
+            <p class="section-desc">Choose one unassigned folder from <code>train_img</code>. This links the MongoDB user to the trained face data.</p>
+
+            {% if face_folders %}
+            <div class="face-option-list" id="faceOptionList">
+                {% for folder in face_folders %}
+                <label class="face-option">
+                    <input type="radio" name="face_picker" value="{{ folder }}" {% if form_data.face_id == folder %}checked{% endif %}>
+                    <div>
+                        <div class="face-option-name">{{ folder }}</div>
+                        <div class="face-option-meta">Folder in train_img ready for this student account.</div>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="empty">No unassigned face folders are available in <code>train_img</code>.</p>
+            {% endif %}
+
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeFacePicker()">Cancel</button>
+                <button type="button" id="confirmFaceSelectionBtn">Use Selected Face Data</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function showCreds(username, fullName, role, password) {
             document.getElementById('modalName').textContent = fullName;
@@ -381,6 +500,63 @@
         document.getElementById('credOverlay').addEventListener('click', function(e) {
             if (e.target === this) closeCreds();
         });
+
+        const roleSelect = document.getElementById('roleSelect');
+        const facePickerField = document.getElementById('facePickerField');
+        const faceIdInput = document.getElementById('faceIdInput');
+        const selectedFaceLabel = document.getElementById('selectedFaceLabel');
+        const faceOverlay = document.getElementById('faceOverlay');
+        const createUserForm = document.getElementById('createUserForm');
+
+        function syncFacePickerVisibility() {
+            facePickerField.style.display = roleSelect.value === 'student' ? 'grid' : 'none';
+        }
+
+        function updateSelectedFaceLabel(faceId) {
+            if (faceId) {
+                selectedFaceLabel.textContent = faceId;
+                selectedFaceLabel.classList.remove('empty');
+            } else {
+                selectedFaceLabel.textContent = 'No train_img folder selected';
+                selectedFaceLabel.classList.add('empty');
+            }
+        }
+
+        function openFacePicker() {
+            faceOverlay.classList.add('active');
+        }
+
+        function closeFacePicker() {
+            faceOverlay.classList.remove('active');
+        }
+
+        document.getElementById('openFacePickerBtn').addEventListener('click', openFacePicker);
+
+        document.getElementById('confirmFaceSelectionBtn').addEventListener('click', function() {
+            const selected = document.querySelector('input[name="face_picker"]:checked');
+            if (!selected) {
+                return;
+            }
+            faceIdInput.value = selected.value;
+            updateSelectedFaceLabel(selected.value);
+            closeFacePicker();
+        });
+
+        faceOverlay.addEventListener('click', function(e) {
+            if (e.target === this) closeFacePicker();
+        });
+
+        roleSelect.addEventListener('change', syncFacePickerVisibility);
+
+        createUserForm.addEventListener('submit', function(e) {
+            if (roleSelect.value === 'student' && !faceIdInput.value) {
+                e.preventDefault();
+                openFacePicker();
+            }
+        });
+
+        syncFacePickerVisibility();
+        updateSelectedFaceLabel(faceIdInput.value);
 
         {% if show_username %}
         var btn = document.querySelector('[data-username="{{ show_username }}"]');

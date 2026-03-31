@@ -30,7 +30,11 @@
       "Bash(touch \"$dir/.gitkeep\")",
       "Bash(done)",
       "Bash(grep -E \"\\\\.py$|\\\\.txt$|\\\\.html$|\\\\.json$|\\\\.yml$|\\\\.yaml$\")",
-      "Bash(wc -l *.py)"
+      "Bash(wc -l *.py)",
+      "Bash(grep -rn \"train_img\\\\|captured_images\\\\|upload.*face\\\\|face.*upload\" /c/Users/manso/Desktop/Video-based-attendance --include=\"*.py\" --include=\"*.html\" ! -path \"*/venv/*\")",
+      "Bash(grep -rn train_img /c/Users/manso/Desktop/Video-based-attendance --include=*.py --include=*.html)",
+      "Bash(sqlite3:*)",
+      "Bash(grep -r \"face\\\\|enroll\\\\|train\\\\|video\\\\|capture\" /c/Users/manso/Desktop/Video-based-attendance/templates --include=*.html)"
     ]
   }
 }
