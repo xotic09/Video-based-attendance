@@ -22,9 +22,19 @@
 
         /* ── Create Form ── */
         .create-form {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .form-fields {
+            display: grid;
+            gap: 14px;
+        }
+
+        @media (min-width: 640px) {
+            .form-fields {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
         }
 
         .create-form label {
@@ -48,15 +58,17 @@
         }
 
         .face-display {
-            min-height: 42px;
-            min-width: 220px;
+            min-height: 44px;
+            flex: 1;
+            min-width: 0;
             display: flex;
             align-items: center;
-            padding: 0 12px;
-            border: 1px solid var(--line);
+            padding: 0 14px;
+            border: 1.5px solid rgba(59, 130, 246, 0.18);
             border-radius: var(--radius-md);
-            background: rgba(255, 255, 255, 0.8);
+            background: #fff;
             color: var(--text);
+            font-size: 0.95rem;
         }
 
         .face-display.empty {
@@ -69,13 +81,14 @@
             color: var(--muted);
         }
 
-        @media (min-width: 640px) {
-            .create-form {
-                flex-direction: row;
-                flex-wrap: wrap;
-                align-items: flex-end;
+        .create-form > button[type="submit"] {
+            justify-self: start;
+        }
+
+        @media (max-width: 639px) {
+            .create-form > button[type="submit"] {
+                width: 100%;
             }
-            .create-form label { flex: 1; min-width: 140px; }
         }
 
         /* ── Error & Cred ── */
@@ -85,7 +98,7 @@
             border-radius: var(--radius-lg) !important;
             padding: 18px !important;
             margin-bottom: 16px;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.06), rgba(59, 130, 246, 0.04)) !important;
+            background: #eff6ff !important;
             border: 1px solid var(--purple-200) !important;
         }
 
@@ -116,21 +129,20 @@
             font-weight: 600;
         }
 
-        /* ══ User Cards — Premium ══ */
+        /* ══ User Cards ══ */
         .user-group-label {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
-            margin: 0 0 12px;
-            padding: 8px 14px;
-            background: linear-gradient(135deg, var(--purple-100), var(--purple-50));
+            margin: 0 0 14px;
+            padding: 8px 16px;
+            background: var(--purple-100);
             border-radius: var(--radius-full);
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 800;
             color: var(--purple-900);
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            width: fit-content;
         }
 
         .user-list {
@@ -143,57 +155,71 @@
             .user-list { grid-template-columns: repeat(2, 1fr); }
         }
 
+        @media (min-width: 1024px) {
+            .user-list { grid-template-columns: repeat(3, 1fr); }
+        }
+
         .user-card {
             background: #fff !important;
-            border: 1px solid rgba(139, 92, 246, 0.15) !important;
+            border: 1px solid rgba(59, 130, 246, 0.12) !important;
             border-radius: var(--radius-lg) !important;
-            padding: 18px !important;
+            padding: 16px !important;
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.08) !important;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.06) !important;
             transition: transform 200ms var(--ease), box-shadow 200ms var(--ease);
         }
 
         .user-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15) !important;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12) !important;
         }
 
         .user-card-header {
             display: flex;
             align-items: center;
             gap: 12px;
+            min-width: 0;
         }
 
         .user-avatar {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple-400), var(--purple-600));
+            background: var(--accent);
             color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
             flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
         }
 
-        .user-info { flex: 1; min-width: 0; }
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
 
         .user-name {
             font-weight: 800;
             color: var(--text-strong);
-            font-size: 1.15rem;
-            margin-bottom: 2px;
+            font-size: 1rem;
+            margin-bottom: 1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .user-username {
-            color: var(--muted-strong);
-            font-size: 0.92rem;
+            color: var(--muted);
+            font-size: 0.85rem;
             font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .user-actions {
@@ -211,7 +237,7 @@
             border-radius: var(--radius-full);
         }
 
-        .empty {
+        .empty-msg {
             text-align: center;
             padding: 24px;
             color: var(--muted);
@@ -225,6 +251,7 @@
             z-index: 100;
             justify-content: center;
             align-items: center;
+            padding: 16px;
         }
 
         .overlay.active { display: flex; }
@@ -232,7 +259,7 @@
         .modal {
             padding: 24px !important;
             max-width: 420px;
-            width: calc(100% - 32px);
+            width: 100%;
         }
 
         .modal h3 {
@@ -252,10 +279,10 @@
 
         .face-modal {
             padding: 24px !important;
-            max-width: 560px;
-            width: calc(100% - 32px);
+            max-width: 520px;
+            width: 100%;
             max-height: min(80vh, 720px);
-            overflow: auto;
+            overflow-y: auto;
         }
 
         .face-option-list {
@@ -266,34 +293,45 @@
 
         .face-option {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
             padding: 14px 16px;
-            border: 1px solid var(--line);
+            border: 1.5px solid rgba(59, 130, 246, 0.12);
             border-radius: var(--radius-md);
             cursor: pointer;
-            transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease), transform 160ms var(--ease);
+            background: var(--purple-50);
+            transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease), background 160ms var(--ease);
         }
 
         .face-option:hover {
-            transform: translateY(-1px);
             border-color: var(--purple-300);
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.08);
+            background: var(--purple-100);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
         }
 
-        .face-option input {
-            margin: 0;
+        .face-option input[type="radio"] {
+            margin: 3px 0 0 0;
             flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+        }
+
+        .face-option > div {
+            flex: 1;
+            min-width: 0;
         }
 
         .face-option-name {
             font-weight: 700;
             color: var(--text-strong);
+            word-break: break-all;
         }
 
         .face-option-meta {
-            font-size: 0.84rem;
+            font-size: 0.82rem;
             color: var(--muted);
+            margin-top: 2px;
         }
 
         .password-value {
@@ -308,9 +346,6 @@
     </style>
 </head>
 <body>
-    <div class="gradient-orb gradient-orb-1"></div>
-    <div class="gradient-orb gradient-orb-2"></div>
-
     <div class="topbar">
         <div class="topbar-left">
             <a href="/admin">&larr; Dashboard</a>
@@ -333,23 +368,25 @@
             <h2 class="section-title">➕ Create New User</h2>
             <p class="section-desc">A password will be auto-generated. Share credentials with the user after creation.</p>
             <form class="create-form" method="post" action="/admin/create-user" id="createUserForm">
-                <label>
-                    Full Name
-                    <input type="text" name="full_name" required placeholder="e.g. John Doe" value="{{ form_data.full_name | default('', true) }}">
-                </label>
-                <label>
-                    Username
-                    <input type="text" name="username" required placeholder="e.g. johndoe" value="{{ form_data.username | default('', true) }}">
-                </label>
-                <label>
-                    Role
-                    <select name="role" id="roleSelect" required>
-                        <option value="student" {% if (form_data.role | default('student', true)) == 'student' %}selected{% endif %}>Student</option>
-                        <option value="teacher" {% if form_data.role == 'teacher' %}selected{% endif %}>Teacher</option>
-                    </select>
-                </label>
-                <label id="facePickerField" class="face-picker-row">
-                    Student Face Data
+                <div class="form-fields">
+                    <label>
+                        Full Name
+                        <input type="text" name="full_name" required placeholder="e.g. John Doe" value="{{ form_data.full_name | default('', true) }}">
+                    </label>
+                    <label>
+                        Username
+                        <input type="text" name="username" required placeholder="e.g. johndoe" value="{{ form_data.username | default('', true) }}">
+                    </label>
+                    <label>
+                        Role
+                        <select name="role" id="roleSelect" required>
+                            <option value="student" {% if (form_data.role | default('student', true)) == 'student' %}selected{% endif %}>Student</option>
+                            <option value="teacher" {% if form_data.role == 'teacher' %}selected{% endif %}>Teacher</option>
+                        </select>
+                    </label>
+                </div>
+                <div id="facePickerField" class="face-picker-row">
+                    <label style="margin-bottom: 0;">Student Face Data</label>
                     <input type="hidden" name="face_id" id="faceIdInput" value="{{ form_data.face_id | default('', true) }}">
                     <div class="face-picker-control">
                         <div class="face-display {% if not form_data.face_id %}empty{% endif %}" id="selectedFaceLabel">
@@ -358,7 +395,7 @@
                         <button type="button" class="btn-secondary" id="openFacePickerBtn">Select From train_img</button>
                     </div>
                     <p class="face-help">Student accounts must be linked to an existing face folder from <code>train_img</code>.</p>
-                </label>
+                </div>
                 <button type="submit">Create User</button>
             </form>
         </section>
@@ -395,7 +432,7 @@
                 {% endfor %}
             </div>
             {% else %}
-            <p class="empty">No teachers yet.</p>
+            <p class="empty-msg">No teachers yet.</p>
             {% endif %}
         </section>
 
@@ -431,7 +468,7 @@
                 {% endfor %}
             </div>
             {% else %}
-            <p class="empty">No students yet.</p>
+            <p class="empty-msg">No students yet.</p>
             {% endif %}
         </section>
     </main>
@@ -474,7 +511,7 @@
                 {% endfor %}
             </div>
             {% else %}
-            <p class="empty">No unassigned face folders are available in <code>train_img</code>.</p>
+            <p class="empty-msg">No unassigned face folders available in <code>train_img</code>.</p>
             {% endif %}
 
             <div class="modal-actions">
@@ -509,7 +546,7 @@
         const createUserForm = document.getElementById('createUserForm');
 
         function syncFacePickerVisibility() {
-            facePickerField.style.display = roleSelect.value === 'student' ? 'grid' : 'none';
+            facePickerField.style.display = roleSelect.value === 'student' ? '' : 'none';
         }
 
         function updateSelectedFaceLabel(faceId) {

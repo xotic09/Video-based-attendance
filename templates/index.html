@@ -52,12 +52,24 @@
             font-weight: 700;
         }
 
+        .video-panel.hidden {
+            display: none;
+        }
+
+        .desktop-only {
+            display: none;
+        }
+
+        .mobile-only {
+            display: block;
+        }
+
         .video-frame {
             position: relative;
             border-radius: var(--radius-md);
             overflow: hidden;
             aspect-ratio: 16 / 9;
-            background: #0f0a1a;
+            background: #0f172a;
         }
 
         .video-frame.is-blocked video {
@@ -90,7 +102,7 @@
             display: block;
             width: 100%;
             border-radius: var(--radius-md);
-            background: #0f0a1a;
+            background: #0f172a;
         }
 
         .video-frame video {
@@ -99,7 +111,7 @@
         }
 
         #recordedPreview {
-            aspect-ratio: 3 / 4;
+            aspect-ratio: 16 / 9;
             object-fit: contain;
         }
 
@@ -156,12 +168,10 @@
         .capture-hero {
             margin-bottom: 16px;
             padding: 14px;
-            border: 1px solid rgba(139, 92, 246, 0.18);
+            border: 1px solid rgba(59, 130, 246, 0.18);
             border-radius: 18px;
-            background:
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.45), transparent 42%),
-                linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(59, 130, 246, 0.12));
-            box-shadow: 0 16px 36px rgba(139, 92, 246, 0.14);
+            background: #eff6ff;
+            box-shadow: 0 16px 36px rgba(59, 130, 246, 0.14);
         }
 
         .capture-hero .helper-note {
@@ -176,13 +186,13 @@
             min-height: 60px;
             border: none;
             border-radius: 16px;
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed 48%, #3b82f6);
+            background: #2563eb;
             color: #fff;
             font-size: 1rem;
             font-weight: 800;
             letter-spacing: 0.01em;
             box-shadow:
-                0 14px 30px rgba(124, 58, 237, 0.28),
+                0 14px 30px rgba(37, 99, 235, 0.28),
                 inset 0 1px 0 rgba(255, 255, 255, 0.22);
             transition:
                 transform 180ms var(--ease),
@@ -195,14 +205,14 @@
             position: absolute;
             inset: 1px;
             border-radius: 15px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 42%);
+            background: rgba(255, 255, 255, 0.06);
             pointer-events: none;
         }
 
         .capture-button:hover {
             transform: translateY(-1px);
             box-shadow:
-                0 18px 36px rgba(124, 58, 237, 0.34),
+                0 18px 36px rgba(37, 99, 235, 0.34),
                 inset 0 1px 0 rgba(255, 255, 255, 0.22);
             filter: saturate(1.06);
         }
@@ -211,61 +221,26 @@
             transform: translateY(0);
         }
 
-        .tips-section {
-            padding: 14px 16px !important;
-            background: rgba(255, 255, 255, 0.75) !important;
-        }
-
-        .tips-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            background: none !important;
-            color: var(--text-strong) !important;
-            padding: 0 !important;
-            min-height: 32px;
-            box-shadow: none !important;
-            border: none !important;
-            font-size: 1rem;
-            font-weight: 700;
-            width: 100%;
-            text-align: left;
-        }
-
-        .tips-toggle:hover { transform: none; filter: none; }
-
-        .tips-toggle .chevron {
-            transition: transform 0.3s var(--ease);
-            font-size: 0.8rem;
+        .capture-source-note {
+            margin: 0;
+            font-size: 0.82rem;
             color: var(--muted);
+            text-align: center;
         }
 
-        .tips-toggle.open .chevron { transform: rotate(180deg); }
+        @media (min-width: 768px) {
+            .desktop-only {
+                display: block;
+            }
 
-        .tips-list {
-            margin: 12px 0 0;
-            padding-left: 20px;
-            display: none;
+            .mobile-only {
+                display: none;
+            }
         }
 
-        .tips-list.open {
-            display: block;
-            animation: fadeIn 0.3s var(--ease);
-        }
-
-        .tips-list li {
-            padding: 6px 0;
-            color: var(--muted);
-            font-size: 0.9rem;
-            border-bottom: none !important;
-        }
     </style>
 </head>
 <body>
-    <div class="gradient-orb gradient-orb-1"></div>
-    <div class="gradient-orb gradient-orb-3"></div>
-
     {% if user %}
     <div class="topbar">
         <div class="topbar-left">
@@ -289,30 +264,24 @@
         </div>
 
         <div class="video-grid">
-            <!--
-            <section class="video-panel">
+            <section class="video-panel hidden desktop-only" id="liveCameraPanel">
                 <h2>Live Camera</h2>
                 <div class="video-frame" id="livePreviewFrame">
                     <video id="livePreview" autoplay muted playsinline></video>
                     <div class="video-overlay">Live preview blocked after recording</div>
                 </div>
                 <div class="controls" style="margin-top: 14px;">
-                    <button type="button" class="btn-assign" id="enableCameraBtn">Enable Camera</button>
-                    <button type="button" class="btn-create" id="switchCameraBtn" disabled>Use Front Camera</button>
                     <button type="button" class="btn-create" id="startBtn" disabled>Start Recording</button>
                     <button type="button" class="btn-delete" id="stopBtn" disabled>Stop Recording</button>
                 </div>
-                <p class="status-text" id="statusText" style="margin-top: 10px; text-align: center;">Tap Enable Camera, or use Phone Camera below.</p>
+                <p class="status-text" id="cameraStatusText" style="margin-top: 10px; text-align: center;">Desktop recording is ready when you press Start Recording.</p>
                 <p class="helper-note" id="cameraHint"></p>
             </section>
-            -->
 
             <section class="video-panel">
-                <div class="capture-hero">
-                    <div class="controls">
-                        <button type="button" class="capture-button" id="pickVideoBtn">Record Video</button>
-                    </div>
-                    <p class="helper-note">Or pick a saved clip.</p>
+                <div class="capture-hero mobile-only" id="mobileCaptureHero">
+                    <button type="button" class="capture-button" id="useDeviceCameraBtn">Record Video</button>
+                    <p class="helper-note" id="captureHelperText">Use your phone camera on mobile.</p>
                 </div>
 
                 <h2>Recorded Preview</h2>
@@ -322,7 +291,7 @@
                     {% if class_info %}
                     <input type="hidden" name="class_id" value="{{ class_info._id }}">
                     {% endif %}
-                    <input type="file" name="video" id="videoInput" accept="video/*" capture="environment" hidden>
+                    <input type="file" id="mobileCameraInput" accept="video/*" capture="environment" hidden>
 
                     <div class="recording-form">
                         <div class="form-group">
@@ -346,45 +315,30 @@
                     <div class="controls">
                         <button type="submit" class="btn-assign" id="uploadBtn" disabled style="width: 100%;">Upload For Attendance</button>
                     </div>
-                    <p class="status-text" id="statusText" style="margin-top: 10px; text-align: center;">Pick a video to begin.</p>
+                    <p class="status-text" id="statusText" style="margin-top: 10px; text-align: center;">Record a video to begin.</p>
+                    <p class="capture-source-note" id="captureSourceNote"></p>
                 </form>
             </section>
         </div>
 
-        <section class="tips-section">
-            <button type="button" class="tips-toggle" id="tipsToggle" onclick="toggleTips()">
-                Recording Tips
-                <span class="chevron">v</span>
-            </button>
-            <ul class="tips-list" id="tipsList">
-                <li>Keep the camera steady and pan slowly across the room.</li>
-                <li>Make sure each student is visible for more than one moment.</li>
-                <li>Avoid strong backlight and heavy motion blur.</li>
-            </ul>
-        </section>
     </main>
 
     <script>
-        function toggleTips() {
-            const toggle = document.getElementById("tipsToggle");
-            const list = document.getElementById("tipsList");
-            toggle.classList.toggle("open");
-            list.classList.toggle("open");
-        }
-
-        /*
         const livePreviewFrame = document.getElementById("livePreviewFrame");
+        const liveCameraPanel = document.getElementById("liveCameraPanel");
         const livePreview = document.getElementById("livePreview");
         const recordedPreview = document.getElementById("recordedPreview");
-        const enableCameraBtn = document.getElementById("enableCameraBtn");
-        const switchCameraBtn = document.getElementById("switchCameraBtn");
         const startBtn = document.getElementById("startBtn");
         const stopBtn = document.getElementById("stopBtn");
-        const pickVideoBtn = document.getElementById("pickVideoBtn");
+        const useDeviceCameraBtn = document.getElementById("useDeviceCameraBtn");
         const uploadBtn = document.getElementById("uploadBtn");
-        const videoInput = document.getElementById("videoInput");
+        const mobileCameraInput = document.getElementById("mobileCameraInput");
         const statusText = document.getElementById("statusText");
+        const cameraStatusText = document.getElementById("cameraStatusText");
         const cameraHint = document.getElementById("cameraHint");
+        const captureSourceNote = document.getElementById("captureSourceNote");
+        const captureHelperText = document.getElementById("captureHelperText");
+        const mobileCaptureHero = document.getElementById("mobileCaptureHero");
         const recordingForm = document.getElementById("recordingForm");
 
         let stream = null;
@@ -392,20 +346,32 @@
         let recordedChunks = [];
         let selectedVideoFile = null;
         let recordedPreviewUrl = null;
-        let currentFacingMode = "environment";
+        let prefersMobileCapture = false;
+
+        function isProbablyMobileDevice() {
+            const mobileMatch = /Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(navigator.userAgent || "");
+            const coarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+            return mobileMatch || coarsePointer;
+        }
+
+        function updateCaptureModeUi() {
+            prefersMobileCapture = isProbablyMobileDevice();
+            liveCameraPanel.classList.toggle("hidden", prefersMobileCapture);
+            mobileCaptureHero.classList.toggle("hidden", !prefersMobileCapture);
+
+            if (prefersMobileCapture) {
+                captureHelperText.textContent = "Use the previous mobile camera flow.";
+                return;
+            }
+
+            captureHelperText.textContent = "Desktop webcam recording is available below.";
+        }
 
         function setLivePreviewBlocked(isBlocked) {
             livePreviewFrame.classList.toggle("is-blocked", isBlocked);
             if (!isBlocked && stream && livePreview.srcObject !== stream) {
                 livePreview.srcObject = stream;
             }
-        }
-
-        function updateCameraModeUi() {
-            const isFrontCamera = currentFacingMode === "user";
-            livePreviewFrame.classList.toggle("is-user-camera", isFrontCamera);
-            switchCameraBtn.textContent = isFrontCamera ? "Use Back Camera" : "Use Front Camera";
-            videoInput.setAttribute("capture", isFrontCamera ? "user" : "environment");
         }
 
         function stopCameraStream() {
@@ -461,7 +427,8 @@
             return "webm";
         }
 
-        function updatePreview(file) {
+        function updatePreview(file, options) {
+            const sourceLabel = options && options.sourceLabel ? options.sourceLabel : "";
             selectedVideoFile = file || null;
             uploadBtn.disabled = !selectedVideoFile;
 
@@ -473,12 +440,14 @@
             if (!selectedVideoFile) {
                 recordedPreview.removeAttribute("src");
                 recordedPreview.load();
+                captureSourceNote.textContent = "";
                 return;
             }
 
             recordedPreviewUrl = URL.createObjectURL(selectedVideoFile);
             recordedPreview.src = recordedPreviewUrl;
             recordedPreview.load();
+            captureSourceNote.textContent = sourceLabel;
         }
 
         function buildRecordedFile() {
@@ -496,56 +465,54 @@
                 { type: mimeType }
             );
 
-            updatePreview(file);
+            updatePreview(file, { sourceLabel: "Source: live recording from this device camera." });
             return file;
         }
 
         function explainCameraError(error) {
             if (!error) {
-                return "Camera access failed. Use Phone Camera below instead.";
+                return "Camera access failed. Try again.";
             }
 
             switch (error.name) {
                 case "NotAllowedError":
                 case "PermissionDeniedError":
                 case "SecurityError":
-                    return "Camera permission was blocked. Allow access in the browser, or use Phone Camera below.";
+                    return "Camera permission was blocked. Allow access in the browser and try again.";
                 case "NotFoundError":
                 case "DevicesNotFoundError":
-                    return "No camera was found on this device. Use Phone Camera below.";
+                    return "No camera was found on this device.";
                 case "NotReadableError":
                 case "TrackStartError":
                     return "The camera is busy in another app. Close it there and try again.";
                 default:
-                    return "Camera access failed. Use Phone Camera below or retry after reloading.";
+                    return "Camera access failed. Retry after reloading.";
             }
         }
 
         function applyInitialRecordingState() {
             if (!browserSupportsLiveRecording()) {
-                enableCameraBtn.disabled = true;
-                switchCameraBtn.disabled = true;
                 startBtn.disabled = true;
-                statusText.textContent = "This browser cannot record inside the page. Use Phone Camera below.";
-                cameraHint.textContent = "The upload button opens your phone camera or video picker directly.";
+                cameraStatusText.textContent = "This browser cannot record inside the page.";
+                cameraHint.textContent = prefersMobileCapture
+                    ? "On mobile use the phone camera picker."
+                    : "This desktop browser cannot record from the webcam on this page.";
                 return;
             }
 
             if (!isSecureCameraContext()) {
-                enableCameraBtn.disabled = true;
-                switchCameraBtn.disabled = true;
                 startBtn.disabled = true;
-                statusText.textContent = "Live browser recording on phones needs HTTPS. Use Phone Camera below or open this page over HTTPS.";
-                cameraHint.textContent = "If you open this page on your phone with http://<pc-ip>:5000, the browser may never show a camera permission prompt.";
+                cameraStatusText.textContent = "Live browser recording needs HTTPS or localhost.";
+                cameraHint.textContent = prefersMobileCapture
+                    ? "On mobile use the phone camera picker."
+                    : "Open this page on localhost/127.0.0.1 or over HTTPS to use webcam recording.";
                 return;
             }
 
-            enableCameraBtn.disabled = false;
-            switchCameraBtn.disabled = false;
             startBtn.disabled = true;
             stopBtn.disabled = true;
-            statusText.textContent = "Tap Enable Camera to request permission on this device.";
-            cameraHint.textContent = "Hold the phone horizontally for a wide classroom preview. If permission does not appear, use Phone Camera below instead.";
+            cameraStatusText.textContent = "Desktop recording is ready when you press Start Recording.";
+            cameraHint.textContent = "Desktop uses the PC webcam here.";
         }
 
         async function enableCamera(forceRestart) {
@@ -556,7 +523,6 @@
 
             if (!forceRestart && stream) {
                 startBtn.disabled = false;
-                statusText.textContent = "Camera ready. Start recording when the class is in frame.";
                 return;
             }
 
@@ -565,12 +531,9 @@
                     stopCameraStream();
                 }
 
-                enableCameraBtn.disabled = true;
-                switchCameraBtn.disabled = true;
-                statusText.textContent = "Requesting camera permission...";
+                cameraStatusText.textContent = "Requesting camera permission...";
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: { ideal: currentFacingMode },
                         width: { ideal: 1280 },
                         height: { ideal: 720 },
                         aspectRatio: { ideal: 16 / 9 }
@@ -580,72 +543,51 @@
                 livePreview.srcObject = stream;
                 await livePreview.play().catch(function () {});
                 setLivePreviewBlocked(false);
-                updateCameraModeUi();
                 startBtn.disabled = false;
                 stopBtn.disabled = true;
-                switchCameraBtn.disabled = false;
-                statusText.textContent = "Camera ready. Start recording when the class is in frame.";
             } catch (error) {
-                enableCameraBtn.disabled = false;
-                switchCameraBtn.disabled = false;
                 startBtn.disabled = true;
-                statusText.textContent = explainCameraError(error);
+                cameraStatusText.textContent = explainCameraError(error);
                 console.error(error);
             }
         }
 
-        enableCameraBtn.addEventListener("click", function () {
-            enableCamera(false);
-        });
-
-        switchCameraBtn.addEventListener("click", async function () {
-            const nextFacingMode = currentFacingMode === "environment" ? "user" : "environment";
-            currentFacingMode = nextFacingMode;
-            updateCameraModeUi();
-
-            if (!stream) {
-                statusText.textContent = nextFacingMode === "user"
-                    ? "Front camera selected. Tap Enable Camera."
-                    : "Back camera selected. Tap Enable Camera.";
+        useDeviceCameraBtn.addEventListener("click", async function () {
+            if (prefersMobileCapture) {
+                mobileCameraInput.click();
                 return;
             }
-
-            statusText.textContent = nextFacingMode === "user"
-                ? "Switching to front camera..."
-                : "Switching to back camera...";
-
-            await enableCamera(true);
         });
 
-        pickVideoBtn.addEventListener("click", function () {
-            videoInput.click();
-        });
-
-        videoInput.addEventListener("change", function () {
-            const file = videoInput.files && videoInput.files[0];
+        function handleSelectedFile(file, sourceLabel) {
             if (!file) {
                 return;
             }
 
-            updatePreview(file);
-            statusText.textContent = "Video selected. Submit to generate attendance.";
+            updatePreview(file, { sourceLabel: sourceLabel || "" });
+            statusText.textContent = "Video ready. Upload when ready.";
+        }
+
+        mobileCameraInput.addEventListener("change", function () {
+            const file = mobileCameraInput.files && mobileCameraInput.files[0];
+            handleSelectedFile(file, "Source: camera capture from this device.");
         });
 
         startBtn.addEventListener("click", function () {
             if (!stream) {
-                statusText.textContent = "Tap Enable Camera first, or use Phone Camera below.";
+                cameraStatusText.textContent = "Enable the camera first.";
                 return;
             }
 
             setLivePreviewBlocked(false);
             recordedChunks = [];
             updatePreview(null);
-            videoInput.value = "";
+            mobileCameraInput.value = "";
 
             try {
                 mediaRecorder = new MediaRecorder(stream, getRecorderOptions());
             } catch (error) {
-                statusText.textContent = "This browser could not start recording. Use Phone Camera below instead.";
+                cameraStatusText.textContent = "This browser could not start recording.";
                 console.error(error);
                 return;
             }
@@ -660,15 +602,15 @@
                 const file = buildRecordedFile();
                 uploadBtn.disabled = !file;
                 statusText.textContent = file
-                    ? "Recording ready. Submit to generate attendance."
+                    ? "Recording ready. Upload when ready."
                     : "No recording captured. Try again.";
             };
 
             mediaRecorder.start();
             startBtn.disabled = true;
             stopBtn.disabled = false;
-            switchCameraBtn.disabled = true;
             uploadBtn.disabled = true;
+            cameraStatusText.textContent = "Recording in progress...";
             statusText.textContent = "Recording in progress...";
         });
 
@@ -679,15 +621,14 @@
             setLivePreviewBlocked(true);
             startBtn.disabled = false;
             stopBtn.disabled = true;
-            switchCameraBtn.disabled = false;
         });
 
         recordingForm.addEventListener("submit", async function (event) {
             event.preventDefault();
 
-            const file = selectedVideoFile || (videoInput.files && videoInput.files[0]);
+            const file = selectedVideoFile;
             if (!file) {
-                statusText.textContent = "Record or choose a video before uploading.";
+                statusText.textContent = "Record a video before uploading.";
                 return;
             }
 
@@ -695,9 +636,7 @@
             formData.set("video", file, file.name);
 
             uploadBtn.disabled = true;
-            enableCameraBtn.disabled = true;
-            switchCameraBtn.disabled = true;
-            pickVideoBtn.disabled = true;
+            useDeviceCameraBtn.disabled = true;
             startBtn.disabled = true;
             stopBtn.disabled = true;
             statusText.textContent = "Uploading video and processing attendance...";
@@ -718,11 +657,9 @@
                 document.write(responseText);
                 document.close();
             } catch (error) {
-                pickVideoBtn.disabled = false;
+                useDeviceCameraBtn.disabled = false;
 
                 if (stream) {
-                    enableCameraBtn.disabled = true;
-                    switchCameraBtn.disabled = false;
                     startBtn.disabled = false;
                 } else {
                     applyInitialRecordingState();
@@ -734,98 +671,42 @@
             }
         });
 
-        window.addEventListener("beforeunload", function () {
+        function warnBeforeLeave(event) {
+            event.preventDefault();
+            event.returnValue = "";
+            return "";
+        }
+
+        window.onbeforeunload = warnBeforeLeave;
+        window.addEventListener("beforeunload", warnBeforeLeave);
+
+        window.addEventListener("keydown", function (event) {
+            const isRefreshKey = event.key === "F5";
+            const isReloadShortcut =
+                (event.ctrlKey || event.metaKey) &&
+                event.key &&
+                event.key.toLowerCase() === "r";
+
+            if (!isRefreshKey && !isReloadShortcut) {
+                return;
+            }
+
+            const shouldLeave = window.confirm("Refreshing this page will clear the current recording state. Continue?");
+            if (!shouldLeave) {
+                event.preventDefault();
+            }
+        });
+
+        window.addEventListener("pagehide", function () {
             stopCameraStream();
         });
 
-        updateCameraModeUi();
+        updateCaptureModeUi();
         applyInitialRecordingState();
-        */
 
-        const recordedPreview = document.getElementById("recordedPreview");
-        const pickVideoBtn = document.getElementById("pickVideoBtn");
-        const uploadBtn = document.getElementById("uploadBtn");
-        const videoInput = document.getElementById("videoInput");
-        const statusText = document.getElementById("statusText");
-        const recordingForm = document.getElementById("recordingForm");
-
-        let selectedVideoFile = null;
-        let recordedPreviewUrl = null;
-
-        function updatePreview(file) {
-            selectedVideoFile = file || null;
-            uploadBtn.disabled = !selectedVideoFile;
-
-            if (recordedPreviewUrl) {
-                URL.revokeObjectURL(recordedPreviewUrl);
-                recordedPreviewUrl = null;
-            }
-
-            if (!selectedVideoFile) {
-                recordedPreview.removeAttribute("src");
-                recordedPreview.load();
-                return;
-            }
-
-            recordedPreviewUrl = URL.createObjectURL(selectedVideoFile);
-            recordedPreview.src = recordedPreviewUrl;
-            recordedPreview.load();
+        if (!prefersMobileCapture && browserSupportsLiveRecording() && isSecureCameraContext()) {
+            enableCamera(false);
         }
-
-        pickVideoBtn.addEventListener("click", function () {
-            videoInput.click();
-        });
-
-        videoInput.addEventListener("change", function () {
-            const file = videoInput.files && videoInput.files[0];
-            if (!file) {
-                return;
-            }
-
-            updatePreview(file);
-            statusText.textContent = "Video ready. Upload when ready.";
-        });
-
-        recordingForm.addEventListener("submit", async function (event) {
-            event.preventDefault();
-
-            const file = selectedVideoFile || (videoInput.files && videoInput.files[0]);
-            if (!file) {
-                statusText.textContent = "Record or choose a video before uploading.";
-                return;
-            }
-
-            const formData = new FormData(recordingForm);
-            formData.set("video", file, file.name);
-
-            uploadBtn.disabled = true;
-            pickVideoBtn.disabled = true;
-            statusText.textContent = "Uploading video and processing attendance...";
-
-            try {
-                const response = await fetch(recordingForm.action, {
-                    method: "POST",
-                    body: formData,
-                    credentials: "same-origin"
-                });
-                if (!response.ok) {
-                    const responseText = await response.text();
-                    throw new Error(responseText || "Upload failed.");
-                }
-
-                if (response.redirected && response.url) {
-                    window.location.href = response.url;
-                    return;
-                }
-
-                window.location.reload();
-            } catch (error) {
-                pickVideoBtn.disabled = false;
-                uploadBtn.disabled = false;
-                statusText.textContent = error.message || "Upload failed. Try again.";
-                console.error(error);
-            }
-        });
     </script>
 </body>
 </html>

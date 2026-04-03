@@ -7,15 +7,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <style>
         .btn-assign {
-            background: linear-gradient(135deg, #a78bfa, #8b5cf6) !important;
-            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.25) !important;
+            background: #2563eb !important;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25) !important;
         }
         .btn-assign:hover {
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35) !important;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35) !important;
         }
 
         .btn-unassign {
-            background: linear-gradient(135deg, #fb923c, #ea580c) !important;
+            background: #ea580c !important;
             color: #fff !important;
             border: none !important;
             box-shadow: 0 4px 14px rgba(234, 88, 12, 0.25) !important;
@@ -25,7 +25,7 @@
         }
 
         .btn-delete {
-            background: linear-gradient(135deg, #f87171, #dc2626) !important;
+            background: #dc2626 !important;
             color: #fff !important;
             border: none !important;
             box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25) !important;
@@ -119,9 +119,8 @@
             transform: translateY(-2px);
         }
 
-        /* Gradient header strip — deep violet for all card headers */
         .class-card-head {
-            background: linear-gradient(135deg, #7c3aed, #5b21b6);
+            background: #2563eb;
             padding: 16px 18px;
             position: relative;
             overflow: hidden;
@@ -271,7 +270,7 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--purple-400), var(--purple-600));
+            background: var(--accent);
             color: #fff;
             display: flex;
             align-items: center;
@@ -303,9 +302,6 @@
     </style>
 </head>
 <body>
-    <div class="gradient-orb gradient-orb-1"></div>
-    <div class="gradient-orb gradient-orb-2"></div>
-
     <div class="topbar">
         <h1>Admin</h1>
         <div class="topbar-right">

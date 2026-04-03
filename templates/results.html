@@ -29,7 +29,7 @@
             flex: 0 0 auto;
             min-width: 106px;
             background: rgba(255, 255, 255, 0.82) !important;
-            border: 1px solid rgba(139, 92, 246, 0.1) !important;
+            border: 1px solid rgba(59, 130, 246, 0.1) !important;
             border-radius: var(--radius-lg) !important;
             padding: 16px;
             text-align: center;
@@ -51,10 +51,7 @@
             margin: 0;
             font-size: 1.6rem;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--purple-600), var(--purple-400));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--accent);
         }
 
         @media (min-width: 640px) {
@@ -109,8 +106,8 @@
             font-size: 0.94rem;
             border-radius: var(--radius-md);
             background: rgba(255, 255, 255, 0.92);
-            border: 1px solid rgba(139, 92, 246, 0.1);
-            box-shadow: 0 8px 18px rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            box-shadow: 0 8px 18px rgba(59, 130, 246, 0.08);
         }
 
         .result-item {
@@ -122,38 +119,16 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            cursor: pointer;
+            transition: background 160ms var(--ease);
         }
 
         .absent-check {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            height: 18px;
             margin: 0;
             flex-shrink: 0;
-            border-radius: 999px;
-            border: 2px solid var(--purple-400);
-            background: #fff;
-            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.14);
             cursor: pointer;
-            transition:
-                transform 160ms var(--ease),
-                box-shadow 160ms var(--ease),
-                border-color 160ms var(--ease),
-                background 160ms var(--ease);
-        }
-
-        .absent-check:hover {
-            transform: scale(1.04);
-            border-color: var(--purple-600);
-        }
-
-        .absent-check:checked {
-            border-color: var(--purple-700);
-            background:
-                radial-gradient(circle at center, #ffffff 0 24%, transparent 26%),
-                linear-gradient(135deg, var(--purple-600), var(--purple-800));
-            box-shadow: 0 8px 18px rgba(124, 58, 237, 0.24);
         }
 
         .absent-label {
@@ -172,8 +147,15 @@
             font-size: 0.95rem;
             font-weight: 700;
             border-radius: 18px;
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9 55%, #5b21b6) !important;
-            box-shadow: 0 16px 28px rgba(109, 40, 217, 0.28) !important;
+            background: #2563eb !important;
+            box-shadow: 0 16px 28px rgba(37, 99, 235, 0.28) !important;
+        }
+
+        .mark-present-btn:disabled {
+            background: rgba(59, 130, 246, 0.32) !important;
+            color: rgba(255, 255, 255, 0.72) !important;
+            box-shadow: none !important;
+            opacity: 1;
         }
 
         @media (min-width: 480px) {
@@ -213,21 +195,21 @@
         }
 
         .results-download {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(243, 232, 255, 0.98)) !important;
+            background: #eff6ff !important;
             color: var(--purple-700) !important;
-            border: 1px solid rgba(139, 92, 246, 0.18) !important;
-            box-shadow: 0 10px 22px rgba(139, 92, 246, 0.1) !important;
+            border: 1px solid rgba(59, 130, 246, 0.18) !important;
+            box-shadow: 0 10px 22px rgba(59, 130, 246, 0.1) !important;
         }
 
         .results-percentage {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed 55%, #5b21b6) !important;
-            box-shadow: 0 16px 28px rgba(124, 58, 237, 0.26) !important;
+            background: #2563eb !important;
+            box-shadow: 0 16px 28px rgba(37, 99, 235, 0.26) !important;
         }
 
         .results-back {
             background: transparent !important;
             color: var(--muted-strong) !important;
-            border: 1px solid rgba(139, 92, 246, 0.16) !important;
+            border: 1px solid rgba(59, 130, 246, 0.16) !important;
             box-shadow: none !important;
             text-decoration: underline;
         }
@@ -292,7 +274,7 @@
             height: 20px;
             border-radius: var(--radius-sm);
             overflow: hidden;
-            background: rgba(139, 92, 246, 0.08);
+            background: rgba(59, 130, 246, 0.08);
         }
 
         .bar-fill {
@@ -322,9 +304,6 @@
     </style>
 </head>
 <body>
-    <div class="gradient-orb gradient-orb-1"></div>
-    <div class="gradient-orb gradient-orb-2"></div>
-
     {% if user %}
     <div class="topbar">
         <div class="topbar-left">
@@ -477,6 +456,8 @@
                         if (document.querySelectorAll(".absent-check").length === 0) {
                             btn.style.display = "none";
                         }
+
+                        syncAbsentSelectionState();
                     }
 
                     btn.disabled = false;
@@ -489,6 +470,41 @@
                     btn.textContent = "Mark Selected as Present";
                 });
         }
+
+        function syncAbsentSelectionState() {
+            const checks = document.querySelectorAll(".absent-check");
+            const checked = document.querySelectorAll(".absent-check:checked");
+            const btn = document.getElementById("markPresentBtn");
+
+            if (!btn) {
+                return;
+            }
+
+            btn.disabled = checked.length === 0;
+        }
+
+        document.querySelectorAll(".absent-item").forEach((item) => {
+            item.addEventListener("click", function (event) {
+                const checkbox = item.querySelector(".absent-check");
+                if (!checkbox) {
+                    return;
+                }
+
+                if (event.target.closest(".absent-check")) {
+                    syncAbsentSelectionState();
+                    return;
+                }
+
+                checkbox.checked = !checkbox.checked;
+                syncAbsentSelectionState();
+            });
+        });
+
+        document.querySelectorAll(".absent-check").forEach((checkbox) => {
+            checkbox.addEventListener("change", syncAbsentSelectionState);
+        });
+
+        syncAbsentSelectionState();
 
         function showPercentage() {
             document.getElementById("percentageOverlay").classList.add("active");
@@ -534,6 +550,32 @@
         document.getElementById("percentageOverlay").addEventListener("click", function (e) {
             if (e.target === this) {
                 closeModal();
+            }
+        });
+
+        function warnBeforeLeave(event) {
+            event.preventDefault();
+            event.returnValue = "";
+            return "";
+        }
+
+        window.onbeforeunload = warnBeforeLeave;
+        window.addEventListener("beforeunload", warnBeforeLeave);
+
+        window.addEventListener("keydown", function (event) {
+            const isRefreshKey = event.key === "F5";
+            const isReloadShortcut =
+                (event.ctrlKey || event.metaKey) &&
+                event.key &&
+                event.key.toLowerCase() === "r";
+
+            if (!isRefreshKey && !isReloadShortcut) {
+                return;
+            }
+
+            const shouldLeave = window.confirm("Refreshing this page will leave the current results view. Continue?");
+            if (!shouldLeave) {
+                event.preventDefault();
             }
         });
     </script>
