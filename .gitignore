@@ -23,9 +23,9 @@ htmlcov/
 *.swp
 *.swo
 
-# Environment and local settings
-.env
-.env.*
+# # Environment and local settings
+# .env
+# .env.*
 
 # Local databases
 *.db

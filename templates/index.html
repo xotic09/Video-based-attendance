@@ -271,6 +271,7 @@
                     <div class="video-overlay">Live preview blocked after recording</div>
                 </div>
                 <div class="controls" style="margin-top: 14px;">
+                    <button type="button" class="btn-secondary" id="enableCameraBtn" onclick="enableCamera(true)">Enable Camera</button>
                     <button type="button" class="btn-create" id="startBtn" disabled>Start Recording</button>
                     <button type="button" class="btn-delete" id="stopBtn" disabled>Stop Recording</button>
                 </div>
@@ -516,8 +517,26 @@
         }
 
         async function enableCamera(forceRestart) {
-            if (!browserSupportsLiveRecording() || !isSecureCameraContext()) {
-                applyInitialRecordingState();
+            const secure = isSecureCameraContext();
+
+            if (!secure) {
+                if (forceRestart) {
+                    cameraStatusText.textContent = "Camera requires localhost or HTTPS. Open the app at http://localhost:5000 in your browser — not via an IP address.";
+                    cameraHint.textContent = "Change your address bar from the IP to: localhost:5000";
+                } else {
+                    applyInitialRecordingState();
+                }
+                return;
+            }
+
+            const supported = browserSupportsLiveRecording();
+
+            if (!supported) {
+                if (forceRestart) {
+                    cameraStatusText.textContent = "This browser does not support webcam recording. Please use Chrome or Edge.";
+                } else {
+                    applyInitialRecordingState();
+                }
                 return;
             }
 
@@ -545,6 +564,7 @@
                 setLivePreviewBlocked(false);
                 startBtn.disabled = false;
                 stopBtn.disabled = true;
+                cameraStatusText.textContent = "Camera active. Press Start Recording when ready.";
             } catch (error) {
                 startBtn.disabled = true;
                 cameraStatusText.textContent = explainCameraError(error);
@@ -618,8 +638,9 @@
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
                 mediaRecorder.stop();
             }
+            stopCameraStream();
             setLivePreviewBlocked(true);
-            startBtn.disabled = false;
+            startBtn.disabled = true;
             stopBtn.disabled = true;
         });
 

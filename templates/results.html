@@ -158,6 +158,30 @@
             opacity: 1;
         }
 
+        .send-email-btn {
+            margin-top: 10px;
+            width: 100%;
+            min-height: 52px;
+            padding: 0 18px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 18px;
+            background: #7c3aed !important;
+            color: #fff !important;
+            box-shadow: 0 16px 28px rgba(124, 58, 237, 0.28) !important;
+        }
+
+        .send-email-btn:disabled {
+            background: rgba(124, 58, 237, 0.32) !important;
+            color: rgba(255, 255, 255, 0.72) !important;
+            box-shadow: none !important;
+            opacity: 1;
+        }
+
+        @media (min-width: 480px) {
+            .send-email-btn { width: auto; }
+        }
+
         @media (min-width: 480px) {
             .mark-present-btn { width: auto; }
         }
@@ -361,6 +385,8 @@
                     </ul>
                     <button class="mark-present-btn" id="markPresentBtn" onclick="markAsPresent()">Mark Selected as Present</button>
                     <div id="markMsg"></div>
+                    <button class="send-email-btn" id="sendEmailBtn" onclick="sendAbsentEmails()">Send Absent Notifications</button>
+                    <div id="emailMsg"></div>
                 {% else %}
                     <p style="color:var(--muted)">All registered students were marked present.</p>
                 {% endif %}
@@ -552,6 +578,50 @@
                 closeModal();
             }
         });
+
+        function sendAbsentEmails() {
+            const checks = document.querySelectorAll(".absent-check");
+            if (checks.length === 0) {
+                document.getElementById("emailMsg").innerHTML =
+                    '<p style="color:var(--muted)">No absent students to notify.</p>';
+                return;
+            }
+
+            const names = Array.from(checks).map((cb) => cb.value);
+            const btn = document.getElementById("sendEmailBtn");
+            btn.disabled = true;
+            btn.textContent = "Sending...";
+
+            const today = new Date().toISOString().split("T")[0];
+
+            fetch("/send_absent_emails", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ names: names, subject: subject, date: today })
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.success) {
+                        let msg = '<p class="moved-msg">' + data.sent + " email(s) sent.";
+                        if (data.no_email && data.no_email.length > 0) {
+                            msg += " No email on file for: " + data.no_email.join(", ") + ".";
+                        }
+                        msg += "</p>";
+                        document.getElementById("emailMsg").innerHTML = msg;
+                    } else {
+                        document.getElementById("emailMsg").innerHTML =
+                            '<p style="color:var(--danger)">' + (data.error || "Failed to send emails.") + "</p>";
+                    }
+                    btn.disabled = false;
+                    btn.textContent = "Send Absent Notifications";
+                })
+                .catch(() => {
+                    document.getElementById("emailMsg").innerHTML =
+                        '<p style="color:var(--danger)">Failed to send emails. Please try again.</p>';
+                    btn.disabled = false;
+                    btn.textContent = "Send Absent Notifications";
+                });
+        }
 
         function warnBeforeLeave(event) {
             event.preventDefault();

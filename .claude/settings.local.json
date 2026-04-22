@@ -34,7 +34,8 @@
       "Bash(grep -rn \"train_img\\\\|captured_images\\\\|upload.*face\\\\|face.*upload\" /c/Users/manso/Desktop/Video-based-attendance --include=\"*.py\" --include=\"*.html\" ! -path \"*/venv/*\")",
       "Bash(grep -rn train_img /c/Users/manso/Desktop/Video-based-attendance --include=*.py --include=*.html)",
       "Bash(sqlite3:*)",
-      "Bash(grep -r \"face\\\\|enroll\\\\|train\\\\|video\\\\|capture\" /c/Users/manso/Desktop/Video-based-attendance/templates --include=*.html)"
+      "Bash(grep -r \"face\\\\|enroll\\\\|train\\\\|video\\\\|capture\" /c/Users/manso/Desktop/Video-based-attendance/templates --include=*.html)",
+      "Bash(venv/Scripts/pip install *)"
     ]
   }
 }

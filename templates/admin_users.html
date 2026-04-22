@@ -385,6 +385,12 @@
                         </select>
                     </label>
                 </div>
+                <div id="emailField" style="display:none;">
+                    <label>
+                        Student Email
+                        <input type="email" name="email" id="emailInput" placeholder="e.g. student@university.edu" value="{{ form_data.email | default('', true) }}">
+                    </label>
+                </div>
                 <div id="facePickerField" class="face-picker-row">
                     <label style="margin-bottom: 0;">Student Face Data</label>
                     <input type="hidden" name="face_id" id="faceIdInput" value="{{ form_data.face_id | default('', true) }}">
@@ -451,7 +457,7 @@
                                     {{ s.full_name }}
                                 </button>
                             </div>
-                            <div class="user-username">@{{ s.username }}</div>
+                            <div class="user-username">@{{ s.username }}{% if s.email %} · {{ s.email }}{% endif %}</div>
                         </div>
                     </div>
                     <div class="user-actions">
@@ -540,13 +546,16 @@
 
         const roleSelect = document.getElementById('roleSelect');
         const facePickerField = document.getElementById('facePickerField');
+        const emailField = document.getElementById('emailField');
         const faceIdInput = document.getElementById('faceIdInput');
         const selectedFaceLabel = document.getElementById('selectedFaceLabel');
         const faceOverlay = document.getElementById('faceOverlay');
         const createUserForm = document.getElementById('createUserForm');
 
         function syncFacePickerVisibility() {
-            facePickerField.style.display = roleSelect.value === 'student' ? '' : 'none';
+            const isStudent = roleSelect.value === 'student';
+            facePickerField.style.display = isStudent ? '' : 'none';
+            emailField.style.display = isStudent ? '' : 'none';
         }
 
         function updateSelectedFaceLabel(faceId) {

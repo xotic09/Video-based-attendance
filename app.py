@@ -1,10 +1,13 @@
 from collections import Counter
 from datetime import datetime, timezone, timedelta
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from functools import wraps
 import io
 import json
 import os
 import random
+import smtplib
 import sqlite3
 import string
 import uuid
@@ -29,7 +32,10 @@ from pymongo import MongoClient
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
+from dotenv import load_dotenv
 from face_recognition import FaceRecognition
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "attendance-jwt-secret-key-2024"
@@ -49,6 +55,13 @@ FRAME_SAMPLE_INTERVAL = 15
 MIN_PRESENT_DETECTIONS = 2
 RESULT_PAGE_TTL = timedelta(hours=2)
 RESULT_PAGE_CACHE = {}
+
+MAIL_SENDER   = os.environ.get("MAIL_SENDER", "")
+MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
+MAIL_SMTP     = "smtp.gmail.com"
+MAIL_PORT     = 587
+MAIL_SUBJECT  = os.environ.get("MAIL_SUBJECT", "Attendance Alert — Absent from {subject} on {date}")
+MAIL_BODY     = os.environ.get("MAIL_BODY", "Dear {name}, you were marked absent from {subject} on {date}. If you believe this is incorrect, please contact your teacher. Regards, Attendance System")
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -710,11 +723,13 @@ def create_user():
     full_name = request.form.get("full_name", "").strip()
     role = request.form.get("role", "student")
     face_id = request.form.get("face_id", "").strip()
+    email = request.form.get("email", "").strip().lower()
     form_data = {
         "username": username,
         "full_name": full_name,
         "role": role,
         "face_id": face_id,
+        "email": email,
     }
 
     if not username or not full_name:
@@ -758,6 +773,8 @@ def create_user():
     }
     if role == "student":
         user_doc["face_id"] = face_id
+        if email:
+            user_doc["email"] = email
     users_collection.insert_one(user_doc)
 
     return render_admin_users_page(show_username=username)
@@ -1125,6 +1142,72 @@ def mark_present():
         )
 
     return jsonify({"success": True})
+
+
+def get_student_email(name):
+    cleaned = sanitize_student_name(name)
+    doc = users_collection.find_one(
+        {"$or": [{"full_name": cleaned}, {"username": cleaned}]},
+        {"email": 1},
+    )
+    return doc.get("email") if doc else None
+
+
+@app.route("/send_absent_emails", methods=["POST"])
+@login_required
+def send_absent_emails():
+    if not MAIL_SENDER or not MAIL_PASSWORD:
+        return jsonify({
+            "success": False,
+            "error": "Email is not configured. Set MAIL_SENDER and MAIL_PASSWORD environment variables.",
+        }), 503
+
+    data = request.get_json()
+    names = data.get("names", [])
+    subject = data.get("subject", "").strip()
+    date = data.get("date", datetime.now().strftime("%Y-%m-%d"))
+
+    if not names:
+        return jsonify({"success": False, "error": "No absentee names provided."}), 400
+
+    sent = 0
+    no_email = []
+    errors = []
+
+    try:
+        with smtplib.SMTP(MAIL_SMTP, MAIL_PORT) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(MAIL_SENDER, MAIL_PASSWORD)
+
+            for name in names:
+                email_addr = get_student_email(name)
+                if not email_addr:
+                    no_email.append(name)
+                    continue
+
+                msg = MIMEMultipart("alternative")
+                msg["Subject"] = MAIL_SUBJECT.format(name=name, subject=subject, date=date)
+                msg["From"] = MAIL_SENDER
+                msg["To"] = email_addr
+
+                plain = MAIL_BODY.format(name=name, subject=subject, date=date)
+                html = plain.replace(name, f"<strong>{name}</strong>").replace(subject, f"<strong>{subject}</strong>").replace(date, f"<strong>{date}</strong>")
+                msg.attach(MIMEText(plain, "plain"))
+                msg.attach(MIMEText(html, "html"))
+
+                try:
+                    server.sendmail(MAIL_SENDER, email_addr, msg.as_string())
+                    sent += 1
+                except Exception as e:
+                    errors.append(name)
+
+    except smtplib.SMTPAuthenticationError:
+        return jsonify({"success": False, "error": "SMTP authentication failed. Check MAIL_SENDER and MAIL_PASSWORD."}), 503
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Failed to connect to mail server: {str(e)}"}), 503
+
+    return jsonify({"success": True, "sent": sent, "no_email": no_email, "errors": errors})
 
 
 @app.route("/attendance_percentage")
